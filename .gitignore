@@ -3,6 +3,9 @@
 # Edit at https://www.gitignore.io/?templates=node,windows,visualstudiocode
 
 ### Node ###
+# Eslint
+.eslintrc.js
+
 # Logs
 logs
 *.log
