@@ -5,7 +5,7 @@ const Account = require('models/Account');
 exports.localRegister = async (ctx) => {
     // 데이터 검증
     const schema = Joi.object().keys({
-        username: Joi.string().alphanum().min(4).max(15).required(),
+        username: Joi.string().regex(/^[가-힣a-zA-Z0-9]{3,24}$/).required(),
         email: Joi.string().email().required(),
         password: Joi.string().required().min(6)
     });
