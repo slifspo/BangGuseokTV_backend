@@ -51,6 +51,8 @@ exports.localRegister = async (ctx) => {
         ctx.throw(500, e);
     }
 
+    // TODO: 방 생성
+
     ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
     ctx.body = account.profile; // 프로필 정보로 응답합니다.
 };

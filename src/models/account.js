@@ -11,28 +11,34 @@ function hash(password) {
 const Account = new Schema({
     profile: {
         username: String,
-        thumbnail: { type: String, default: '/static/images/default_thumbnail.png' } // default 이미지
+        thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
+        avatar: { type: String, default: '/static/images/default_avatar.mp4'}, // default 아바타
     },
     email: { type: String },
-    // 소셜 계정으로 회원가입을 할 경우에는 각 서비스에서 제공되는 id 와 accessToken 을 저장합니다
+    // 소셜 계정으로 회원가입을 할 경우에는 각 서비스에서 제공되는 accessToken 을 저장합니다
     social: {
-        facebook: {
-            id: String,
-            accessToken: String
-        },
-        google: {
-            id: String,
-            accessToken: String
-        }
+        facebookToken: String,
+        googleToken: String
     },
     password: String, // 로컬계정의 경우엔 비밀번호를 해싱해서 저장합니다
-    thoughtCount: { type: Number, default: 0 }, // 서비스에서 포스트를 작성 할 때마다 1씩 올라갑니다
+    friendList: [{ type: mongoose.Schema.Types.ObjectId, ref: 'accounts' }], // 저장된 친구의 ObjectIds
+    playList: [{ // 재생목록
+        name: String, // 재생목록 이름 
+        videos: [{
+            videoURL: String,
+            videoTitle: String
+        }]
+    }],
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'rooms' }], // 즐겨찾기 한 방의 ObjectIds
     createdAt: { type: Date, default: Date.now } // 계정이 생성된 시각
 });
 
 /* ************* */
 /* static 메소드 */
 /* ************* */
+
+// TODO:  
+
 Account.statics.findByUsername = function(username) {
     // 객체에 내장되어있는 값을 사용 할 때는 객체명.키 이런식으로 쿼리하면 됩니다
     return this.findOne({'profile.username': username}).exec();
@@ -69,6 +75,12 @@ Account.statics.localRegister = function({ username, email, password }) {
 /* ************** */
 /* 인스턴스 메소드 */
 /* ************** */
+
+/*
+    TODO: 친구 추가 메소드, 친구 삭제 메소드, 재생목록 추가,수정,삭제, 재생목록 동영상 추가,수정,삭제
+    즐겨찾기 방 목록 조회
+*/
+
 Account.methods.validatePassword = function(password) {
     // 함수로 전달받은 password 의 해시값과, 데이터에 담겨있는 해시값과 비교를 합니다.
     const hashed = hash(password);
