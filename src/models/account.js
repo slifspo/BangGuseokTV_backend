@@ -21,10 +21,12 @@ const Account = new Schema({
         googleToken: String
     },
     password: String, // 로컬계정의 경우엔 비밀번호를 해싱해서 저장합니다
-    friendList: [{ type: mongoose.Schema.Types.ObjectId, ref: 'accounts' }], // 저장된 친구의 ObjectIds
-    playList: [{ // 재생목록
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'accounts' }], // 저장된 친구의 ObjectIds
+    plays: [{ // 재생목록
+        id: Number,
         name: String, // 재생목록 이름 
         videos: [{
+            id: Number,
             videoURL: String,
             videoTitle: String
         }]

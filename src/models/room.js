@@ -8,13 +8,14 @@ const Room = new Schema({
         description: String,
         thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
     },
-    history: [
+    histories: [
         { // 동영상 히스토리, 최대 30개로 제한
             username: String,
             videoURL: String,
             videoTitle: String,
             thumbsUp: Number,
-            thumbsDown: Number
+            thumbsDown: Number,
+            createdAt: { type: Date, default: Date.now } // 생성된 시각
         }
     ],
     favoriteCount: Number, // 즐겨찾기 한 수
