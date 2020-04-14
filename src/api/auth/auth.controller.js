@@ -51,8 +51,6 @@ exports.localRegister = async (ctx) => {
         ctx.throw(500, e);
     }
 
-    // TODO: 방 생성
-
     ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
     ctx.body = account.profile; // 프로필 정보로 응답합니다.
 };
@@ -126,7 +124,7 @@ exports.logout = (ctx) => {
     ctx.status = 204;
 };
 
-// 쿠키에 access_token 이 있다면, 현재 로그인된 유저의 정보를 알려줌, 토큰이 있다면 user: { _id, profile }
+// 쿠키에 access_token 이 있다면 복호화하여 현재 로그인된 유저의 정보를 알려줌, user: { _id, profile }
 exports.check = (ctx) => {
     const { user } = ctx.request;
 
