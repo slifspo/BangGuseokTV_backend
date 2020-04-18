@@ -1,16 +1,17 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const { generateToken } = require('lib/token');
 
 // HMAC SHA256 해싱
-function hash(password) {
-    return crypto.createHmac('sha256', process.env.SECRET_KEY).update(password).digest('hex');
+function hash(value) {
+    return crypto.createHmac('sha256', process.env.SECRET_KEY).update(value).digest('hex');
 }
 
 const Account = new Schema({
     profile: {
-        username: String,
+        username: { type: String, required: true },
         thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
         avatar: { type: String, default: '/static/images/default_avatar.mp4'}, // default 아바타
     },
@@ -32,6 +33,8 @@ const Account = new Schema({
         }]
     }],
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'rooms' }], // 즐겨찾기 한 방의 ObjectIds
+    email_verified: { type: Boolean, required: true, default: false }, // 이메일 인증 여부
+    key_for_verify: { type: String, required: true }, // 인증 코드
     createdAt: { type: Date, default: Date.now } // 계정이 생성된 시각
 });
 
@@ -68,7 +71,8 @@ Account.statics.localRegister = function({ username, email, password }) {
             // thumbnail 값을 설정하지 않으면 기본값으로 설정됩니다.
         },
         email,
-        password: hash(password)
+        password: hash(password),
+        key_for_verify: hash(email)
     });
 
     return account.save();
@@ -98,5 +102,27 @@ Account.methods.generateToken = function() {
 
     return generateToken(payload, 'account');
 };
+
+Account.methods.sendMail = function(email) {
+    const smtpTransport = nodemailer.createTransport({
+        service: 'gmail', // 구글 이메일 사용
+        auth: {
+            user: 'hhsw1606@gmail.com',
+            pass: process.env.GMAIL_PASSWORD
+        }
+    });
+
+    const host = 'http://localhost:3000/' // host 이름
+    
+    const mailOpt = {
+        from: 'hhsw1606@gmail.com',
+        to: email,
+        subject: '방구석TV 이메일 인증을 진행해주세요.',
+        html: '<h1>이메일 인증을 위해 아래의 링크를 클릭해주세요.</h1><br>' + 
+        "<a href='" + host + 'auth/email?email=' + email + '&key=' + this.key_for_verify + "'>이메일 인증하기</a>"
+    }
+
+    return smtpTransport.sendMail(mailOpt);
+}
 
 module.exports = mongoose.model('Account', Account);
