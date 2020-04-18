@@ -43,14 +43,13 @@ exports.localRegister = async (ctx) => {
         ctx.throw(500, e);
     }
 
-    // 토큰 생성
-    let token = null;
+    // 인증 메일 전송
+    let mail = null;
     try {
-        token = await account.generateToken();
+        mail = await account.sendMail(ctx.request.body.email);
     } catch (e) {
         ctx.throw(500, e);
     }
 
-    ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
     ctx.body = account.profile; // 프로필 정보로 응답합니다.
 };
