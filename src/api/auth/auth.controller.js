@@ -81,3 +81,38 @@ exports.check = (ctx) => {
 
     ctx.body = user.profile;
 };
+
+// 이메일 인증
+exports.email = async (ctx) => {
+    const { email, key } = ctx.request.query;
+    let account = null;
+
+    try {
+        // 이메일로 유저 인스턴스를 찾음
+        account = await Account.findByEmail(email);
+    } catch (e) {
+        ctx.throw(500, e);
+    }
+
+    // key 일치여부 확인
+    if(account.key_for_verify != key){
+        ctx.status = 403; // Forbidden
+        return;
+    }
+    try { // 일치하면 email_verified 를 true 로 바꿈
+        await account.update({ email_verified: true });
+    } catch (e) {
+        ctx.throw(500, e);
+    }
+    
+    // 토큰 생성
+    let token = null;
+    try {
+        token = await account.generateToken();
+    } catch (e) {
+        ctx.throw(500, e);
+    }
+
+    ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+    ctx.body = account.profile; // 프로필 정보로 응답합니다.
+}
