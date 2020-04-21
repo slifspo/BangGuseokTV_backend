@@ -14,10 +14,13 @@ const Account = new Schema({
         username: { type: String, required: true },
         thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
         avatar: { type: String, default: '/static/images/default_avatar.mp4'}, // default 아바타
+        verified: { type: Boolean, default: false } // 인증 여부
     },
-    email: { type: String },
-    // 소셜 계정으로 회원가입을 할 경우에는 각 서비스에서 제공되는 accessToken 을 저장합니다
-    social: {
+    email: { // 로컬 계정으로 회원가입 시 이메일 인증을 해야함
+         address: String, // 이메일 주소
+         key_for_verify: { type: String }, // 인증 코드
+    },
+    social: { // 소셜 계정으로 회원가입을 할 경우에는 각 서비스에서 제공되는 accessToken 을 저장합니다
         facebookToken: String,
         googleToken: String
     },
@@ -33,8 +36,6 @@ const Account = new Schema({
         }]
     }],
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'rooms' }], // 즐겨찾기 한 방의 ObjectIds
-    email_verified: { type: Boolean, required: true, default: false }, // 이메일 인증 여부
-    key_for_verify: { type: String, required: true }, // 인증 코드
     createdAt: { type: Date, default: Date.now } // 계정이 생성된 시각
 });
 
@@ -50,7 +51,7 @@ Account.statics.findByUsername = function(username) {
 };
 
 Account.statics.findByEmail = function(email) {
-    return this.findOne({email}).exec();
+    return this.findOne({'email.address': email}).exec();
 };
 
 Account.statics.findByEmailOrUsername = function({username, email}) {
@@ -58,7 +59,7 @@ Account.statics.findByEmailOrUsername = function({username, email}) {
         // $or 연산자를 통해 둘중에 하나를 만족하는 데이터를 찾습니다
         $or: [
             { 'profile.username': username },
-            { email }
+            { 'email.address': email }
         ]
     }).exec();
 };
@@ -67,12 +68,14 @@ Account.statics.localRegister = function({ username, email, password }) {
     // 데이터를 생성 할 때는 new this() 를 사용합니다.
     const account = new this({
         profile: {
-            username
+            username: username
             // thumbnail 값을 설정하지 않으면 기본값으로 설정됩니다.
         },
-        email,
-        password: hash(password),
-        key_for_verify: hash(email)
+        email: {
+            address: email,
+            key_for_verify: hash(email)
+        },
+        password: hash(password)       
     });
 
     return account.save();
@@ -119,7 +122,7 @@ Account.methods.sendMail = function(email) {
         to: email,
         subject: '방구석TV 이메일 인증을 진행해주세요.',
         html: '<h1>이메일 인증을 위해 아래의 링크를 클릭해주세요.</h1><br>' + 
-        "<a href='" + host + 'auth/email?email=' + email + '&key=' + this.key_for_verify + "'>이메일 인증하기</a>"
+        "<a href='" + host + 'auth/emailverify?email=' + email + '&key=' + this.email.key_for_verify + "'>이메일 인증하기</a>"
     }
 
     return smtpTransport.sendMail(mailOpt);
