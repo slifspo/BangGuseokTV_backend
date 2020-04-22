@@ -7,6 +7,6 @@ auth.get('/exists/:key(email|username)/:value', authCtrl.exists); // 이메일|�
 auth.post('/logout', authCtrl.logout); // 로그아웃
 auth.get('/check', authCtrl.check); // 현재 로그인된 유저의 정보를 알려줌
 auth.patch('/verify/email', authCtrl.emailVerify); // 이메일 인증
-/* auth.get('/verified/email/:email', authCtrl.emailVerified); // 유저 이메일 인증 여부 확인 */
+auth.get('/send/email', authCtrl.emaliSend) // 인증메일 전송
 
 module.exports = auth;
