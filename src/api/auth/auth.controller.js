@@ -79,8 +79,6 @@ exports.check = (ctx) => {
         return;
     }
 
-    console.log(user.profile);
-
     ctx.body = user.profile;
 };
 
@@ -131,23 +129,34 @@ exports.emailVerify = async (ctx) => {
     }
 
     ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
-    /* ctx.body = account.profile; // 프로필 정보로 응답합니다. */
-    /* ctx.body = { verified: true }; */
-    ctx.status = 200;
+    ctx.status = 204; // No Content
 }
 
-/* // 유저 이메일 인증 여부 확인
-exports.emailVerified = async (ctx) => {
-    const { email } = ctx.params;
-    let account = null;
+// 인증 메일 전송
+exports.emaliSend = async (ctx) => {
+    // 토큰 정보 확인
+    const { user } = ctx.request;
 
+    if(!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저 조회
+    let account = null;
     try {
-        account = await Account.findByEmail(email);    
+        account = await Account.findByUsername(user.profile.username);
     } catch (e) {
         ctx.throw(500, e);
     }
 
-    ctx.body = {
-        verified: account.profile.verified
-    };
-} */
+    // 인증 메일 전송
+    let mail = null;
+    try {
+        mail = await account.sendMail();
+    } catch (e) {
+        ctx.throw(500, e);
+    }
+
+    ctx.status = 204; // No Content
+}
