@@ -46,7 +46,7 @@ exports.localRegister = async (ctx) => {
     // 인증 메일 전송
     let mail = null;
     try {
-        mail = await account.sendMail(ctx.request.body.email);
+        mail = await account.sendMail();
     } catch (e) {
         ctx.throw(500, e);
     }
