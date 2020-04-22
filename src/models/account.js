@@ -106,7 +106,8 @@ Account.methods.generateToken = function() {
     return generateToken(payload, 'account');
 };
 
-Account.methods.sendMail = function(email) {
+// 인증 메일 발송
+Account.methods.sendMail = function() {
     const smtpTransport = nodemailer.createTransport({
         service: 'gmail', // 구글 이메일 사용
         auth: {
@@ -119,10 +120,10 @@ Account.methods.sendMail = function(email) {
     
     const mailOpt = {
         from: 'hhsw1606@gmail.com',
-        to: email,
+        to: this.email.address,
         subject: '방구석TV 이메일 인증을 진행해주세요.',
         html: '<h1>이메일 인증을 위해 아래의 링크를 클릭해주세요.</h1><br>' + 
-        "<a href='" + host + 'auth/emailverify?email=' + email + '&key=' + this.email.key_for_verify + "'>이메일 인증하기</a>"
+        "<a href='" + host + 'auth/emailverify?email=' + this.email.address + '&key=' + this.email.key_for_verify + "'>이메일 인증하기</a>"
     }
 
     return smtpTransport.sendMail(mailOpt);
