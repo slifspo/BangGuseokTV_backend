@@ -8,5 +8,7 @@ auth.post('/logout', authCtrl.logout); // 로그아웃
 auth.get('/check', authCtrl.check); // 현재 로그인된 유저의 정보를 알려줌
 auth.patch('/verify/email', authCtrl.emailVerify); // 이메일 인증
 auth.get('/send/email', authCtrl.emaliSend) // 인증메일 전송
+auth.get('/login/facebook', authCtrl.fbLogin) // 페이스북 로그인
+auth.get('/login/facebook/callback', authCtrl.fbLoginCb) // 페이스북 로그인 콜백
 
 module.exports = auth;
