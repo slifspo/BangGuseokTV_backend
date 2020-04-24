@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const Account = require('models/Account');
+const Accounts = require('models/Account');
+const passport = require('koa-passport');
 
 // 로컬 로그인
 exports.localLogin = async (ctx) => {
@@ -21,7 +22,7 @@ exports.localLogin = async (ctx) => {
     let account = null;
     try {
         // 이메일로 계정 찾기
-        account = await Account.findByEmail(email);
+        account = await Accounts.findByEmail(email);
     } catch (e) {
         ctx.throw(500, e);
     }
@@ -51,7 +52,7 @@ exports.exists = async (ctx) => {
 
     try {
         // key 에 따라 findByEmail 혹은 findByUsername 을 실행합니다.
-        account = await (key === 'email' ? Account.findByEmail(value) : Account.findByUsername(value));    
+        account = await (key === 'email' ? Accounts.findByEmail(value) : Accounts.findByUsername(value));    
     } catch (e) {
         ctx.throw(500, e);
     }
@@ -102,7 +103,7 @@ exports.emailVerify = async (ctx) => {
     let account = null;
     try {
         // 이메일로 유저 인스턴스를 찾음
-        account = await Account.findByEmail(email);
+        account = await Accounts.findByEmail(email);
     } catch (e) {
         ctx.throw(500, e);
     }
@@ -122,7 +123,7 @@ exports.emailVerify = async (ctx) => {
     // 바뀐 profile의 토큰을 다시 생성
     let token = null;
     try {
-        account = await Account.findByEmail(email); // 업데이트된 document 가져옴
+        account = await Accounts.findByEmail(email); // 업데이트된 document 가져옴
         token = await account.generateToken();
     } catch (e) {
         ctx.throw(500, e);
@@ -145,7 +146,7 @@ exports.emaliSend = async (ctx) => {
     // 유저 조회
     let account = null;
     try {
-        account = await Account.findByUsername(user.profile.username);
+        account = await Accounts.findByUsername(user.profile.username);
     } catch (e) {
         ctx.throw(500, e);
     }
@@ -159,4 +160,50 @@ exports.emaliSend = async (ctx) => {
     }
 
     ctx.status = 204; // No Content
+}
+
+// 페이스북 로그인
+exports.fbLogin = (ctx) => {
+    passport.authenticate('facebook', { // 페이스북 로그인 진행
+        authType: 'rerequest',
+        scope: 'email'
+    })(ctx);
+}
+
+// 페이스북 로그인 콜백
+exports.fbLoginCb = (ctx) => {
+    return passport.authenticate('facebook', {
+        successRedirect: '/login_success',
+        failureRedirect: '/login_fail'
+    }, async (err, profile, info) => {
+        // 계정 조회
+        let account = null;
+        try {
+            account = await Accounts.findByEmail(profile.emails[0].value);
+        } catch (e) {
+            ctx.throw(500, e);
+        }
+
+         // 계정이 없다면
+        if(!account) {
+            // 계정 생성
+            try {
+                account = await Accounts.socialRegister(profile.emails[0].value);
+            } catch (e) {
+                ctx.throw(500, e);
+            }
+        }
+
+        // 토큰 생성
+        let token = null;
+        try {
+            token = await account.generateToken();
+        } catch (e) {
+            ctx.throw(500, e);
+        }
+
+        ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+
+        ctx.redirect('/auth/social');
+    })(ctx);
 }
