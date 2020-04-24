@@ -11,7 +11,7 @@ function hash(value) {
 
 const Account = new Schema({
     profile: {
-        username: { type: String, required: true },
+        username: { type: String },
         thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
         avatar: { type: String, default: '/static/images/default_avatar.mp4'}, // default 아바타
         verified: { type: Boolean, default: false } // 인증 여부
@@ -44,6 +44,10 @@ const Account = new Schema({
 /* ************* */
 
 // TODO:  
+
+Account.statics.findById = function(_id) {
+    return this.findOne({'_id': _id}).exec();
+}
 
 Account.statics.findByUsername = function(username) {
     // 객체에 내장되어있는 값을 사용 할 때는 객체명.키 이런식으로 쿼리하면 됩니다
@@ -80,6 +84,20 @@ Account.statics.localRegister = function({ username, email, password }) {
 
     return account.save();
 };
+
+Account.statics.socialRegister = function( email ) {
+    const account = new this({
+        profile: {
+            username: null,
+            verified: true
+        },
+        email: {
+            address: email
+        }
+    });
+
+    return account.save();
+}
 
 /* ************** */
 /* 인스턴스 메소드 */
