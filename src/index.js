@@ -11,6 +11,9 @@ const mongoose = require('mongoose');
 const bodyParser = require('koa-bodyparser');
 const { jwtMiddleware } = require('lib/token');
 
+const passport = require('koa-passport');
+const passportConfig = require('lib/passport');
+
 mongoose.Promise = global.Promise; // Node 의 네이티브 Promise 사용
 // mongodb 연결
 mongoose.connect(process.env.MONGO_URI).then(
@@ -25,9 +28,12 @@ const port = process.env.PORT || 4000; // PORT 값이 설정되어있지 않다�
 
 app.use(bodyParser()); // 바디파서 적용, 라우터 적용코드보다 상단에 있어야합니다.
 app.use(jwtMiddleware); // JWT 처리 미들웨어 적용
+
+app.use(passport.initialize()); // passport 구동
+passportConfig();
+
 router.use('/api', api.routes()); // api 라우트를 /api 경로 하위 라우트로 설정
 app.use(router.routes()).use(router.allowedMethods());
-
 
 app.listen(port, () => {
     console.log('bgs server is listening to port ' + port);
