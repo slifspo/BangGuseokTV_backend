@@ -10,5 +10,7 @@ auth.patch('/verify/email', authCtrl.emailVerify); // 이메일 인증
 auth.get('/send/email', authCtrl.emaliSend) // 인증메일 전송
 auth.get('/login/facebook', authCtrl.fbLogin) // 페이스북 로그인
 auth.get('/login/facebook/callback', authCtrl.fbLoginCb) // 페이스북 로그인 콜백
+auth.get('/login/google', authCtrl.ggLogin) // 구글 로그인
+auth.get('/login/google/callback', authCtrl.ggLoginCb) // 구글 로그인 콜백
 
 module.exports = auth;
