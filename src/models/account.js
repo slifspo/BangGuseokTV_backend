@@ -25,7 +25,7 @@ const Account = new Schema({
         googleToken: String
     },
     password: String, // 로컬계정의 경우엔 비밀번호를 해싱해서 저장합니다
-    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'accounts' }], // 저장된 친구의 ObjectIds
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }], // 저장된 친구의 ObjectIds
     plays: [{ // 재생목록
         id: Number,
         name: String, // 재생목록 이름 
@@ -35,7 +35,8 @@ const Account = new Schema({
             videoTitle: String
         }]
     }],
-    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'rooms' }], // 즐겨찾기 한 방의 ObjectIds
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }], // 즐겨찾기 한 방의 ObjectIds
+    room_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Room'},
     createdAt: { type: Date, default: Date.now } // 계정이 생성된 시각
 });
 
