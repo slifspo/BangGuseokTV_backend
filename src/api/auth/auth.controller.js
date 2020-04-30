@@ -166,16 +166,56 @@ exports.emaliSend = async (ctx) => {
 exports.fbLogin = (ctx) => {
     passport.authenticate('facebook', { // 페이스북 로그인 진행
         authType: 'rerequest',
-        scope: 'email'
+        scope: ['email']
     })(ctx);
 }
 
 // 페이스북 로그인 콜백
 exports.fbLoginCb = (ctx) => {
-    return passport.authenticate('facebook', {
-        successRedirect: '/login_success',
-        failureRedirect: '/login_fail'
-    }, async (err, profile, info) => {
+    return passport.authenticate('facebook', async (err, profile, info) => {
+        // 계정 조회
+        let account = null;
+        try {
+            account = await Accounts.findByEmail(profile.emails[0].value);
+        } catch (e) {
+            ctx.throw(500, e);
+        }
+
+         // 계정이 없다면
+        if(!account) {
+            // 계정 생성
+            try {
+                account = await Accounts.socialRegister(profile.emails[0].value);
+            } catch (e) {
+                ctx.throw(500, e);
+            }
+        }
+
+        // 토큰 생성
+        let token = null;
+        try {
+            token = await account.generateToken();
+        } catch (e) {
+            ctx.throw(500, e);
+        }
+
+        ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+
+        ctx.redirect('/auth/social');
+    })(ctx);
+}
+
+// 구글 로그인
+exports.ggLogin = (ctx) => {
+    passport.authenticate('google', { // 구글 로그인 진행
+        authType: 'rerequest',
+        scope: ['email']
+    })(ctx);
+}
+
+// 구글 로그인 콜백
+exports.ggLoginCb = (ctx) => {
+    return passport.authenticate('google', async (err, profile, info) => {
         // 계정 조회
         let account = null;
         try {
