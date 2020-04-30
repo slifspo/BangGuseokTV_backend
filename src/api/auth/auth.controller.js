@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const Accounts = require('models/Account');
+const Accounts = require('models/account');
+const Rooms = require('models/room');
 const passport = require('koa-passport');
 
 // 로컬 로그인
@@ -191,6 +192,21 @@ exports.fbLoginCb = (ctx) => {
             }
         }
 
+        // 방 생성
+        let room = null;
+        try {
+            room = await Rooms.createRoom(account._id);
+        } catch (e) {
+            ctx.throw(500, e);
+        }
+
+        // 계정의 room_id 필드 업데이트
+        try {
+            await account.update({ 'room_id': room._id });
+        } catch (e) {
+            ctx.throw(500, e);
+        }
+
         // 토큰 생성
         let token = null;
         try {
@@ -232,6 +248,21 @@ exports.ggLoginCb = (ctx) => {
             } catch (e) {
                 ctx.throw(500, e);
             }
+        }
+
+        // 방 생성
+        let room = null;
+        try {
+            room = await Rooms.createRoom(account._id);
+        } catch (e) {
+            ctx.throw(500, e);
+        }
+
+        // 계정의 room_id 필드 업데이트
+        try {
+            await account.update({ 'room_id': room._id });
+        } catch (e) {
+            ctx.throw(500, e);
         }
 
         // 토큰 생성
