@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const Room = new Schema({
-    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'accounts' }, // 호스트 유저의 ObjectId
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Account', required: true }, // 호스트 유저의 ObjectId
     profile: {
-        title: String,
-        description: String,
+        title: { type: String, default: 'Unnamed' },
+        description: { type: String, default: 'no content' },
         thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
     },
     histories: [
@@ -18,7 +18,7 @@ const Room = new Schema({
             createdAt: { type: Date, default: Date.now } // 생성된 시각
         }
     ],
-    favoriteCount: Number, // 즐겨찾기 한 수
+    favoriteCount: { type: Number, default: 0 }, // 즐겨찾기 한 수
 });
 
 /* ************* */
@@ -27,6 +27,14 @@ const Room = new Schema({
 
 // TODO: 방 검색, 계정생성 시 방 생성
 
+// 방 생성
+Room.statics.createRoom = function(user_id) {
+    const room = new this({
+        user_id: user_id
+    });
+
+    return room.save();
+};
 
 /* 예시
     Room.statics.findByTitle = function(title) {
