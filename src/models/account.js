@@ -36,7 +36,7 @@ const Account = new Schema({
         }]
     }],
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }], // 즐겨찾기 한 방의 ObjectIds
-    room_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Room'},
+    room_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Room'}, // 해당 계정의 방 id
     createdAt: { type: Date, default: Date.now } // 계정이 생성된 시각
 });
 
