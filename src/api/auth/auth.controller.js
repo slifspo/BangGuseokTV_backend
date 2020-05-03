@@ -13,12 +13,12 @@ exports.localLogin = async (ctx) => {
 
     const result = Joi.validate(ctx.request.body, schema);
 
-    if(result.error) {
+    if (result.error) {
         ctx.status = 400; // Bad Request
         return;
     }
 
-    const { email, password } = ctx.request.body; 
+    const { email, password } = ctx.request.body;
 
     let account = null;
     try {
@@ -28,8 +28,8 @@ exports.localLogin = async (ctx) => {
         ctx.throw(500, e);
     }
 
-    if(!account || !account.validatePassword(password)) {
-    // 유저가 존재하지 않거나 || 비밀번호가 일치하지 않으면
+    if (!account || !account.validatePassword(password)) {
+        // 유저가 존재하지 않거나 || 비밀번호가 일치하지 않으면
         ctx.status = 403; // Forbidden
         return;
     }
@@ -53,7 +53,7 @@ exports.exists = async (ctx) => {
 
     try {
         // key 에 따라 findByEmail 혹은 findByUsername 을 실행합니다.
-        account = await (key === 'email' ? Accounts.findByEmail(value) : Accounts.findByUsername(value));    
+        account = await (key === 'email' ? Accounts.findByEmail(value) : Accounts.findByUsername(value));
     } catch (e) {
         ctx.throw(500, e);
     }
@@ -66,7 +66,7 @@ exports.exists = async (ctx) => {
 // 로그아웃
 exports.logout = (ctx) => {
     ctx.cookies.set('access_token', null, {
-        maxAge: 0, 
+        maxAge: 0,
         httpOnly: true
     });
     ctx.status = 204;
@@ -76,7 +76,7 @@ exports.logout = (ctx) => {
 exports.check = (ctx) => {
     const { user } = ctx.request;
 
-    if(!user) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -94,13 +94,13 @@ exports.emailVerify = async (ctx) => {
 
     const result = Joi.validate(ctx.request.body, schema);
 
-    if(result.error) {
+    if (result.error) {
         ctx.status = 400; // Bad Request
         return;
     }
 
     const { email, key } = ctx.request.body;
-    
+
     let account = null;
     try {
         // 이메일로 유저 인스턴스를 찾음
@@ -110,7 +110,7 @@ exports.emailVerify = async (ctx) => {
     }
 
     // key 일치여부 확인
-    if(account.email.key_for_verify != key){
+    if (account.email.key_for_verify != key) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -139,7 +139,7 @@ exports.emaliSend = async (ctx) => {
     // 토큰 정보 확인
     const { user } = ctx.request;
 
-    if(!user) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -182,8 +182,8 @@ exports.fbLoginCb = (ctx) => {
             ctx.throw(500, e);
         }
 
-         // 계정이 없다면
-        if(!account) {
+        // 계정이 없다면
+        if (!account) {
             // 계정 생성
             try {
                 account = await Accounts.socialRegister(profile.emails[0].value);
@@ -192,19 +192,21 @@ exports.fbLoginCb = (ctx) => {
             }
         }
 
-        // 방 생성
-        let room = null;
-        try {
-            room = await Rooms.createRoom(account._id);
-        } catch (e) {
-            ctx.throw(500, e);
-        }
+        // 방이 없을 시 방 생성
+        if (account.room_id === undefined) {
+            let room = null;
+            try {
+                room = await Rooms.createRoom(account._id);
+            } catch (e) {
+                ctx.throw(500, e);
+            }
 
-        // 계정의 room_id 필드 업데이트
-        try {
-            await account.update({ 'room_id': room._id });
-        } catch (e) {
-            ctx.throw(500, e);
+            // 계정의 room_id 필드 업데이트
+            try {
+                await account.update({ 'room_id': room._id });
+            } catch (e) {
+                ctx.throw(500, e);
+            }
         }
 
         // 토큰 생성
@@ -240,8 +242,8 @@ exports.ggLoginCb = (ctx) => {
             ctx.throw(500, e);
         }
 
-         // 계정이 없다면
-        if(!account) {
+        // 계정이 없다면
+        if (!account) {
             // 계정 생성
             try {
                 account = await Accounts.socialRegister(profile.emails[0].value);
@@ -250,19 +252,21 @@ exports.ggLoginCb = (ctx) => {
             }
         }
 
-        // 방 생성
-        let room = null;
-        try {
-            room = await Rooms.createRoom(account._id);
-        } catch (e) {
-            ctx.throw(500, e);
-        }
+        // 방이 없을 시 방 생성
+        if (account.room_id === undefined) {
+            let room = null;
+            try {
+                room = await Rooms.createRoom(account._id);
+            } catch (e) {
+                ctx.throw(500, e);
+            }
 
-        // 계정의 room_id 필드 업데이트
-        try {
-            await account.update({ 'room_id': room._id });
-        } catch (e) {
-            ctx.throw(500, e);
+            // 계정의 room_id 필드 업데이트
+            try {
+                await account.update({ 'room_id': room._id });
+            } catch (e) {
+                ctx.throw(500, e);
+            }
         }
 
         // 토큰 생성
