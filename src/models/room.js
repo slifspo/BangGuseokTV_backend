@@ -2,9 +2,8 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const Room = new Schema({
-    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Account', required: true }, // 호스트 유저의 ObjectId
     profile: {
-        title: { type: String, default: 'Unnamed' },
+        title: { type: String, default: 'Untitled' },
         description: { type: String, default: 'no content' },
         thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
     },
@@ -19,6 +18,7 @@ const Room = new Schema({
         }
     ],
     favoriteCount: { type: Number, default: 0 }, // 즐겨찾기 한 수
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Account', required: true } // 호스트 유저의 ObjectId
 });
 
 /* ************* */
@@ -28,12 +28,21 @@ const Room = new Schema({
 // TODO: 방 검색, 계정생성 시 방 생성
 
 // 방 생성
-Room.statics.createRoom = function(user_id) {
+Room.statics.createRoom = function (user_id) {
     const room = new this({
         user_id: user_id
     });
 
     return room.save();
+};
+
+// 즐겨찾기수 기준 오름차순, 12개
+Room.statics.getRooms = function () {
+    return this.find()
+        .populate('user_id')
+        .sort('-favoriteCount')
+        .limit(12)
+        .select('profile favoriteCount user_id');
 };
 
 /* 예시
