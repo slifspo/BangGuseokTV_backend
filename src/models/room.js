@@ -5,7 +5,10 @@ const Room = new Schema({
     profile: {
         title: { type: String, default: 'Untitled' },
         description: { type: String, default: 'no content' },
-        thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
+        thumbnail: { // 프로필이미지
+            data: Buffer,
+            contentType: String,
+        }
     },
     histories: [
         { // 동영상 히스토리, 최대 30개로 제한
@@ -26,6 +29,11 @@ const Room = new Schema({
 /* ************* */
 
 // TODO: 방 검색, 계정생성 시 방 생성
+
+// user_id 로 방 검색
+Room.statics.findByUserId = function(user_id) {
+    return this.findOne({'user_id': user_id}).exec();
+}
 
 // 방 생성
 Room.statics.createRoom = function (user_id) {
