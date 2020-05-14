@@ -32,7 +32,7 @@ exports.getRooms = async (ctx) => {
 };
 
 // 방 이미지 DB에 업로드
-exports.imgUpload = async (ctx) => {
+exports.updateThumbnail = async (ctx) => {
     const { user } = ctx.request;
 
     // 권한 검증
