@@ -6,7 +6,7 @@ const Rooms = require('models/room');
 exports.localRegister = async (ctx) => {
     // 데이터 검증
     const schema = Joi.object().keys({
-        username: Joi.string().regex(/^[ㄱ-ㅎ|가-힣|a-z|A-Z|0-9]+$/).min(3).max(20).required(), // 한글영어숫자 3~20자
+        username: Joi.string().regex(/^[a-z|A-Z|0-9]+$/).min(3).max(20).required(), // 영어숫자 3~20자
         email: Joi.string().email().required(),
         password: Joi.string().required().min(6)
     });
@@ -103,7 +103,7 @@ exports.updateUsername = async (ctx) => {
 
     // 데이터 검증
     const schema = Joi.object().keys({
-        username: Joi.string().regex(/^[ㄱ-ㅎ|가-힣|a-z|A-Z|0-9]+$/).min(3).max(20).required(), // 한글영어숫자 3~20자
+        username: Joi.string().regex(/^[a-z|A-Z|0-9]+$/).min(3).max(20).required(), // 영어숫자 3~20자
     });
 
     const result = Joi.validate(ctx.request.body, schema);
