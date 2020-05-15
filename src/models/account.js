@@ -12,8 +12,7 @@ function hash(value) {
 const Account = new Schema({
     profile: {
         username: { type: String },
-        thumbnail: { type: String, default: '/static/images/default_thumbnail.png' }, // default 프로필이미지
-        avatar: { type: String, default: '/static/images/default_avatar.mp4'}, // default 아바타
+        avatar: { type: String, default: 'sheep'}, // default 아바타
         verified: { type: Boolean, default: false } // 인증 여부
     },
     email: { // 로컬 계정으로 회원가입 시 이메일 인증을 해야함
