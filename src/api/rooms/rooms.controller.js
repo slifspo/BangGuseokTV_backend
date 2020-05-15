@@ -53,21 +53,21 @@ exports.updateThumbnail = async (ctx) => {
         return;
     }
 
-/*    await mkdirFile(filePath); // 경로 생성
-     await saveFile(file.path, filePath + '\\' + fileName).then(path => {
-        //console.log(path);
-        ctx.body = {
-            error_code: 10000,
-            error_message: 'Successful upload of files',
-        }
-    }).catch(err => {
-        console.log(err);
-        ctx.body = {
-            error_code: 20008,
-            error_message: 'Failed to upload file!'
-        }
-        return;
-    }) */
+    /*    await mkdirFile(filePath); // 경로 생성
+         await saveFile(file.path, filePath + '\\' + fileName).then(path => {
+            //console.log(path);
+            ctx.body = {
+                error_code: 10000,
+                error_message: 'Successful upload of files',
+            }
+        }).catch(err => {
+            console.log(err);
+            ctx.body = {
+                error_code: 20008,
+                error_message: 'Failed to upload file!'
+            }
+            return;
+        }) */
 
     // 해당 유저의 방 찾기
     let room = null;
@@ -88,14 +88,15 @@ exports.updateThumbnail = async (ctx) => {
         });
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
-/*     // thumbnail 경로 업데이트
-    try {
-        await room.update({ 'profile.thumbnail': 'roomImg/' + fileName });
-    } catch (e) {
-        ctx.throw(500, e);
-    } */
+    /*     // thumbnail 경로 업데이트
+        try {
+            await room.update({ 'profile.thumbnail': 'roomImg/' + fileName });
+        } catch (e) {
+            ctx.throw(500, e);
+        } */
 
     /* const fs = require('fs');
     const img = fs.readFileSync(filePath+'\\'+fileName);
@@ -125,3 +126,32 @@ app.use(ctx => {
         ctx.body = 'BODY: Hello, World!' ;
     }
 }); */
+
+// 방 이미지 검색
+exports.getUserRoom = async (ctx) => {
+    const { user } = ctx.request;
+    const { username } = ctx.params;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 해당하는 유저인지 확인
+    if (user.profile.username !== username) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 해당 유저의 방 찾기
+    let room = null;
+    try {
+        room = await Rooms.findByUserId(user._id);
+    } catch {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.body = room
+}
