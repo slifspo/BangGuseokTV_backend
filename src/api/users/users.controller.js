@@ -13,7 +13,7 @@ exports.localRegister = async (ctx) => {
 
     const result = Joi.validate(ctx.request.body, schema);
 
-    if(result.error) {
+    if (result.error) {
         ctx.status = 400; // Bad request
         return;
     }
@@ -24,10 +24,11 @@ exports.localRegister = async (ctx) => {
         existing = await Accounts.findByEmailOrUsername(ctx.request.body);
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
-    if(existing) {
-    // 중복되는 아이디/이메일이 있을 경우
+    if (existing) {
+        // 중복되는 아이디/이메일이 있을 경우
         ctx.status = 409; // Conflict
         // 어떤 값이 중복되었는지 알려줍니다
         ctx.body = {
@@ -42,6 +43,7 @@ exports.localRegister = async (ctx) => {
         account = await Accounts.localRegister(ctx.request.body);
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
     // 방 생성
@@ -50,6 +52,7 @@ exports.localRegister = async (ctx) => {
         room = await Rooms.createRoom(account._id);
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
     // 계정의 room_id 필드 업데이트
@@ -57,6 +60,7 @@ exports.localRegister = async (ctx) => {
         await account.update({ 'room_id': room._id });
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
     // 인증 메일 전송
@@ -73,6 +77,7 @@ exports.localRegister = async (ctx) => {
         token = await account.generateToken();
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
     ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
@@ -84,7 +89,7 @@ exports.updateUsername = async (ctx) => {
     const { user } = ctx.request;
 
     // 권한 검증
-    if(!user) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -95,8 +100,9 @@ exports.updateUsername = async (ctx) => {
         account = await Accounts.findById(user._id);
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
-    if(account.profile.username !== null){
+    if (account.profile.username !== null) {
         ctx.status = 406; // Not allowed
         return;
     }
@@ -108,7 +114,7 @@ exports.updateUsername = async (ctx) => {
 
     const result = Joi.validate(ctx.request.body, schema);
 
-    if(result.error) {
+    if (result.error) {
         ctx.status = 400; // Bad request
         return;
     }
@@ -121,10 +127,11 @@ exports.updateUsername = async (ctx) => {
         existing = await Accounts.findByUsername(username);
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
-    if(existing) {
-    // 중복되는 유저이름이 있을 경우
+    if (existing) {
+        // 중복되는 유저이름이 있을 경우
         ctx.status = 409; // Conflict
         // 어떤 값이 중복되었는지 알려줍니다
         ctx.body = {
@@ -138,6 +145,7 @@ exports.updateUsername = async (ctx) => {
         await account.update({ 'profile.username': username });
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
     // 바뀐 profile의 토큰을 다시 생성
@@ -147,8 +155,51 @@ exports.updateUsername = async (ctx) => {
         token = await account.generateToken();
     } catch (e) {
         ctx.throw(500, e);
+        return;
     }
 
     ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
     ctx.body = account.profile.username; // 유저이름으로 응답.
+}
+
+// 아바타 업데이트
+exports.updateAvatar = async (ctx) => {
+    const { user } = ctx.request;
+    const { avatar } = ctx.request.body;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저 account 찾기
+    let account = null;
+    try {
+        account = await Accounts.findById(user._id);
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 아바타 변경
+    try {
+        await account.update({ 'profile.avatar': avatar });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 바뀐 profile의 토큰을 다시 생성
+    let token = null;
+    try {
+        account = await Accounts.findById(user._id);; // 업데이트된 document 가져옴
+        token = await account.generateToken();
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+    ctx.body = account.profile.avatar;
 }
