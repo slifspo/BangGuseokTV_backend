@@ -12,30 +12,31 @@ function hash(value) {
 const Account = new Schema({
     profile: {
         username: { type: String },
-        avatar: { type: String, default: 'sheep'}, // default 아바타
+        avatar: { type: String, default: 'sheep' }, // default 아바타
         verified: { type: Boolean, default: false } // 인증 여부
     },
     email: { // 로컬 계정으로 회원가입 시 이메일 인증을 해야함
-         address: String, // 이메일 주소
-         key_for_verify: { type: String }, // 인증 코드
+        address: String, // 이메일 주소
+        key_for_verify: { type: String }, // 인증 코드
     },
     social: { // 소셜 계정으로 회원가입을 할 경우에는 각 서비스에서 제공되는 accessToken 을 저장합니다
         facebookToken: String,
         googleToken: String
     },
     password: String, // 로컬계정의 경우엔 비밀번호를 해싱해서 저장합니다
-    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }], // 저장된 친구의 ObjectIds
-    plays: [{ // 재생목록
-        id: Number,
-        name: String, // 재생목록 이름 
-        videos: [{
-            id: Number,
-            videoURL: String,
-            videoTitle: String
+    friendlists: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }], // 저장된 친구의 ObjectIds
+    playlists: {
+        type: Array,
+        default: [{
+            name: 'playlist1',
+            videos: {
+                type: Array,
+                default: []
+            }
         }]
-    }],
+    },
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }], // 즐겨찾기 한 방의 ObjectIds
-    room_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Room'}, // 해당 계정의 방 id
+    room_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' }, // 해당 계정의 방 id
     createdAt: { type: Date, default: Date.now } // 계정이 생성된 시각
 });
 
@@ -45,20 +46,20 @@ const Account = new Schema({
 
 // TODO:  
 
-Account.statics.findById = function(_id) {
-    return this.findOne({'_id': _id}).exec();
+Account.statics.findById = function (_id) {
+    return this.findOne({ '_id': _id }).exec();
 }
 
-Account.statics.findByUsername = function(username) {
+Account.statics.findByUsername = function (username) {
     // 객체에 내장되어있는 값을 사용 할 때는 객체명.키 이런식으로 쿼리하면 됩니다
-    return this.findOne({'profile.username': username}).exec();
+    return this.findOne({ 'profile.username': username }).exec();
 };
 
-Account.statics.findByEmail = function(email) {
-    return this.findOne({'email.address': email}).exec();
+Account.statics.findByEmail = function (email) {
+    return this.findOne({ 'email.address': email }).exec();
 };
 
-Account.statics.findByEmailOrUsername = function({username, email}) {
+Account.statics.findByEmailOrUsername = function ({ username, email }) {
     return this.findOne({
         // $or 연산자를 통해 둘중에 하나를 만족하는 데이터를 찾습니다
         $or: [
@@ -68,7 +69,7 @@ Account.statics.findByEmailOrUsername = function({username, email}) {
     }).exec();
 };
 
-Account.statics.localRegister = function({ username, email, password }) {
+Account.statics.localRegister = function ({ username, email, password }) {
     // 데이터를 생성 할 때는 new this() 를 사용합니다.
     const account = new this({
         profile: {
@@ -79,13 +80,13 @@ Account.statics.localRegister = function({ username, email, password }) {
             address: email,
             key_for_verify: hash(email)
         },
-        password: hash(password)       
+        password: hash(password)
     });
 
     return account.save();
 };
 
-Account.statics.socialRegister = function( email ) {
+Account.statics.socialRegister = function (email) {
     const account = new this({
         profile: {
             username: null,
@@ -108,13 +109,13 @@ Account.statics.socialRegister = function( email ) {
     즐겨찾기 방 목록 조회
 */
 
-Account.methods.validatePassword = function(password) {
+Account.methods.validatePassword = function (password) {
     // 함수로 전달받은 password 의 해시값과, 데이터에 담겨있는 해시값과 비교를 합니다.
     const hashed = hash(password);
     return this.password === hashed;
 };
 
-Account.methods.generateToken = function() {
+Account.methods.generateToken = function () {
     // JWT 에 담을 내용
     const payload = {
         _id: this._id,
@@ -125,7 +126,7 @@ Account.methods.generateToken = function() {
 };
 
 // 인증 메일 발송
-Account.methods.sendMail = function() {
+Account.methods.sendMail = function () {
     const smtpTransport = nodemailer.createTransport({
         service: 'gmail', // 구글 이메일 사용
         auth: {
@@ -135,13 +136,13 @@ Account.methods.sendMail = function() {
     });
 
     const host = 'http://localhost:3000/' // host 이름
-    
+
     const mailOpt = {
         from: 'hhsw1606@gmail.com',
         to: this.email.address,
         subject: '방구석TV 이메일 인증을 진행해주세요.',
-        html: '<h1>이메일 인증을 위해 아래의 링크를 클릭해주세요.</h1><br>' + 
-        "<a href='" + host + 'auth/emailverify?email=' + this.email.address + '&key=' + this.email.key_for_verify + "'>이메일 인증하기</a>"
+        html: '<h1>이메일 인증을 위해 아래의 링크를 클릭해주세요.</h1><br>' +
+            "<a href='" + host + 'auth/emailverify?email=' + this.email.address + '&key=' + this.email.key_for_verify + "'>이메일 인증하기</a>"
     }
 
     return smtpTransport.sendMail(mailOpt);
