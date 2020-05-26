@@ -203,3 +203,54 @@ exports.updateAvatar = async (ctx) => {
     ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
     ctx.body = account.profile.avatar;
 }
+
+// 재생목록에 항목 추가
+exports.addToPlaylist = async (ctx) => {
+    const { user } = ctx.request;
+    const { playlistName, videoInfo } = ctx.request.body;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 항목 추가
+    try {
+        await Accounts.update(
+            {
+                'profile.username': user.profile.username,
+                'playlists.name': playlistName
+            },
+            {
+                '$push': { 'playlists.$.videos': videoInfo }
+            });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.status = 204; // No Content
+}
+
+// 재생목록 가져오기
+exports.getPlaylists = async (ctx) => {
+    const { user } = ctx.request;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저 account 찾기
+    let account = null;
+    try {
+        account = await Accounts.findById(user._id);
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.body = account.playlists;
+}
