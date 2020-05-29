@@ -254,3 +254,34 @@ exports.getPlaylists = async (ctx) => {
 
     ctx.body = account.playlists;
 }
+
+// 재생목록의 동영상 가져오기
+exports.getPlaylistVideos = async (ctx) => {
+    const { user } = ctx.request;
+    const { playlistName } = ctx.query;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저 playlist 찾기
+    let playlist = null;
+    try {
+        playlist = await Accounts.findOne(
+            {
+                'profile.username': user.profile.username,
+                'playlists.name': playlistName
+            },
+            {
+                'playlists.$.videos': true
+            }
+        );
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.body = playlist;
+}
