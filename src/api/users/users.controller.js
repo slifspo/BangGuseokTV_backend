@@ -233,6 +233,43 @@ exports.addToPlaylist = async (ctx) => {
     ctx.status = 204; // No Content
 }
 
+// 재생목록에 항목 제거
+exports.removeFromPlaylist = async (ctx) => {
+    const { user } = ctx.request;
+    const { playlistName, videoIndex } = ctx.query;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 항목 제거
+    try {
+        await Accounts.update(
+            {
+                'profile.username': user.profile.username,
+                'playlists.name': playlistName
+            },
+            {
+                '$unset': { ['playlists.$.videos.' + videoIndex]: 1 } // 배열의 element 를 null 로 만듬
+            });
+        await Accounts.update(
+            {
+                'profile.username': user.profile.username,
+                'playlists.name': playlistName
+            },
+            {
+                '$pull': { 'playlists.$.videos': null } // null 인 element 를 없앰
+            });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.status = 204; // No Content
+}
+
 // 재생목록 가져오기
 exports.getPlaylists = async (ctx) => {
     const { user } = ctx.request;
