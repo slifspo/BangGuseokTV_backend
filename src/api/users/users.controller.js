@@ -322,3 +322,73 @@ exports.getPlaylistVideos = async (ctx) => {
 
     ctx.body = playlist;
 }
+
+// 새로운 재생목록 추가
+exports.addPlaylist = async (ctx) => {
+    const { user } = ctx.request;
+    const { playlistName } = ctx.request.body;
+
+    console.log(playlistName);
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 항목 추가
+    try {
+        await Accounts.update(
+            {
+                'profile.username': user.profile.username,
+            },
+            {
+                '$push': {
+                    'playlists': {
+                        'name': playlistName,
+                        'videos': []
+                    }
+                }
+            });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.status = 204; // No Content
+}
+
+// 재생목록에 항목 제거
+exports.removePlaylist = async (ctx) => {
+    const { user } = ctx.request;
+    const { playlistIndex } = ctx.query;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 항목 제거
+    try {
+        await Accounts.update(
+            {
+                'profile.username': user.profile.username,
+            },
+            {
+                '$unset': { ['playlists.' + playlistIndex]: 1 } // 배열의 element 를 null 로 만듬
+            });
+        await Accounts.update(
+            {
+                'profile.username': user.profile.username,
+            },
+            {
+                '$pull': { 'playlists': null } // null 인 element 를 없앰
+            });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.status = 204; // No Content
+}
