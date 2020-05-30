@@ -9,5 +9,7 @@ users.post('/profile/playlists/videos', usersCtrl.addToPlaylist); // 재생목�
 users.delete('/profile/playlists/videos', usersCtrl.removeFromPlaylist); // 재생목록에 항목 제거
 users.get('/profile/playlists', usersCtrl.getPlaylists); // 재생목록 가져오기
 users.get('/profile/playlists/videos', usersCtrl.getPlaylistVideos); // 재생목록의 동영상 가져오기
+users.post('/profile/playlists', usersCtrl.addPlaylist); // 새로운 재생목록 추가
+users.delete('/profile/playlists', usersCtrl.removePlaylist); // 재생목록에 항목 제거
 
 module.exports = users;
