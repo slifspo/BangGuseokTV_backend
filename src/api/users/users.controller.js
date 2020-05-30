@@ -207,7 +207,7 @@ exports.updateAvatar = async (ctx) => {
 // 재생목록에 항목 추가
 exports.addToPlaylist = async (ctx) => {
     const { user } = ctx.request;
-    const { playlistName, videoInfo } = ctx.request.body;
+    const { playlistIndex, videoInfo } = ctx.request.body;
 
     // 권한 검증
     if (!user) {
@@ -220,10 +220,11 @@ exports.addToPlaylist = async (ctx) => {
         await Accounts.update(
             {
                 'profile.username': user.profile.username,
-                'playlists.name': playlistName
             },
             {
-                '$push': { 'playlists.$.videos': videoInfo }
+                '$push': {
+                    ['playlists.' + playlistIndex + '.videos']: videoInfo
+                }
             });
     } catch (e) {
         ctx.throw(500, e);
@@ -236,7 +237,7 @@ exports.addToPlaylist = async (ctx) => {
 // 재생목록에 항목 제거
 exports.removeFromPlaylist = async (ctx) => {
     const { user } = ctx.request;
-    const { playlistName, videoIndex } = ctx.query;
+    const { playlistIndex, videoIndex } = ctx.query;
 
     // 권한 검증
     if (!user) {
@@ -249,18 +250,16 @@ exports.removeFromPlaylist = async (ctx) => {
         await Accounts.update(
             {
                 'profile.username': user.profile.username,
-                'playlists.name': playlistName
             },
             {
-                '$unset': { ['playlists.$.videos.' + videoIndex]: 1 } // 배열의 element 를 null 로 만듬
+                '$unset': { ['playlists.' + playlistIndex + '.videos.' + videoIndex]: 1 } // 배열의 element 를 null 로 만듬
             });
         await Accounts.update(
             {
                 'profile.username': user.profile.username,
-                'playlists.name': playlistName
             },
             {
-                '$pull': { 'playlists.$.videos': null } // null 인 element 를 없앰
+                '$pull': { ['playlists.' + playlistIndex + '.videos']: null } // null 인 element 를 없앰
             });
     } catch (e) {
         ctx.throw(500, e);
@@ -295,7 +294,7 @@ exports.getPlaylists = async (ctx) => {
 // 재생목록의 동영상 가져오기
 exports.getPlaylistVideos = async (ctx) => {
     const { user } = ctx.request;
-    const { playlistName } = ctx.query;
+    const { playlistIndex } = ctx.query;
 
     // 권한 검증
     if (!user) {
@@ -304,31 +303,32 @@ exports.getPlaylistVideos = async (ctx) => {
     }
 
     // 유저 playlist 찾기
-    let playlist = null;
+    let result = null;
     try {
-        playlist = await Accounts.findOne(
+        result = await Accounts.aggregate([
             {
-                'profile.username': user.profile.username,
-                'playlists.name': playlistName
+                '$match': {
+                    'profile.username': user.profile.username,
+                }
             },
             {
-                'playlists.$.videos': true
+                '$project': {
+                    'playlist': { '$arrayElemAt': ['$playlists', parseInt(playlistIndex)] }
+                }
             }
-        );
+        ])
     } catch (e) {
         ctx.throw(500, e);
         return;
     }
 
-    ctx.body = playlist;
+    ctx.body = result[0].playlist;
 }
 
 // 새로운 재생목록 추가
 exports.addPlaylist = async (ctx) => {
     const { user } = ctx.request;
     const { playlistName } = ctx.request.body;
-
-    console.log(playlistName);
 
     // 권한 검증
     if (!user) {
