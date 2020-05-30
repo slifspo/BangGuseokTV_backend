@@ -29,10 +29,7 @@ const Account = new Schema({
         type: Array,
         default: [{
             name: 'playlist1',
-            videos: {
-                type: Array,
-                default: []
-            }
+            videos: []
         }]
     },
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }], // 즐겨찾기 한 방의 ObjectIds
