@@ -1,9 +1,12 @@
 require('dotenv').config(); // .env 파일에서 환경변수 불러오기
 
 const Koa = require('koa');
+const IO = require('koa-socket-2');
 const Router = require('koa-router');
 
 const app = new Koa();
+const io = new IO();
+
 const router = new Router();
 const api = require('./api');
 
@@ -50,6 +53,17 @@ passportConfig();
 router.use('/api', api.routes()); // api 라우트를 /api 경로 하위 라우트로 설정
 app.use(router.routes())
 app.use(router.allowedMethods());
+
+io.attach(app);
+
+io.on('connection', socket => {
+    console.log('클라이언트가 연결됨');
+
+    // 테스트
+    socket.on('test', (ctx) => {
+        console.log(ctx);
+    })
+})
 
 app.listen(port, () => {
     console.log('bgs server is listening to port ' + port);
