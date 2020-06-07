@@ -56,12 +56,22 @@ app.use(router.allowedMethods());
 
 io.attach(app);
 
-io.on('connection', socket => {
+io.on('connection', (socket) => {
     console.log('클라이언트가 연결됨');
 
-    // 테스트
-    socket.on('test', (ctx) => {
-        console.log(ctx);
+    // 방 참가
+    socket.on('roomJoin', (hostId) => {
+        socket.join(hostId);
+        io.to(hostId).emit('message', {
+            chat: socket.id+"님이 "+hostId+" 님의 방에 입장하셨습니다."
+        })
+    });
+    // 방 나가기
+    socket.on('roomLeave', (hostId) => {
+        socket.leave(hostId);
+        io.to(hostId).emit('message', {
+            chat: socket.id+"님이 퇴장하셨습니다."
+        })
     })
 })
 
