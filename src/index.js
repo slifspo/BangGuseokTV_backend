@@ -50,36 +50,12 @@ app.use(jwtMiddleware); // JWT 처리 미들웨어 적용
 app.use(passport.initialize()); // passport 구동
 passportConfig();
 
+io.attach(app); // socket.io
+require('lib/socket')(io); // socket event 정의
+
 router.use('/api', api.routes()); // api 라우트를 /api 경로 하위 라우트로 설정
 app.use(router.routes())
 app.use(router.allowedMethods());
-
-io.attach(app);
-
-// 소켓 이벤트 정의
-io.on('connection', (socket) => {
-    console.log('클라이언트가 연결됨');
-
-    // 방 참가
-    socket.on('joinRoom', (hostname) => {
-        socket.join(hostname);
-        io.to(hostname).emit('message', {
-            chat: socket.id+"님이 "+hostname+" 님의 방에 입장하셨습니다."
-        })
-    });
-    // 방 나가기
-    socket.on('leaveRoom', (hostname) => {
-        socket.leave(hostname);
-        io.to(hostname).emit('message', {
-            chat: socket.id+"님이 퇴장하셨습니다."
-        })
-    });
-})
-
-// 소켓 연결해제
-io.on('disconnect', (ctx, data) => {
-    console.log('클라이언트 연결해제');
-})
 
 app.listen(port, () => {
     console.log('bgs server is listening to port ' + port);
