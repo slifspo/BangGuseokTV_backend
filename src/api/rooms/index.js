@@ -7,5 +7,6 @@ rooms.patch('/profile/thumbnail', roomsCtrl.updateThumbnail); // 방 이미지 D
 rooms.get('/:username', roomsCtrl.getUserRoom); // 방 이미지 검색
 rooms.patch('/profile', roomsCtrl.updateProfile); // 방 설정 업데이트
 rooms.post('/playerlist', roomsCtrl.joinPlayerlist); // playerlist 추가
+rooms.delete('/playerlist', roomsCtrl.leavePlayerlist); // playerlist 제거
 
 module.exports = rooms;
