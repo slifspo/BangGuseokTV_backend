@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const path = require('path');
 const Rooms = require('models/room');
+const Accounts = require('models/account');
 const fs = require('fs');
 
 // 방 목록 조회, 한번에 최대 12개씩
@@ -129,6 +130,47 @@ exports.updateProfile = async (ctx) => {
             'profile.title': roomTitle,
             'profile.description': roomExplain
         });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.status = 204; // No contents
+};
+
+// playerlist 추가
+exports.joinPlayerlist = async (ctx) => {
+    const { user } = ctx.request;
+    const { hostname } = ctx.request.body;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // hostname 으로 해당 방 찾기
+    let account = null;
+    try {
+        account = await Accounts.findOne({ 'profile.username': hostname });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // playerlist 에 username 추가
+    try {
+        await Rooms.update(
+            {
+                '_id': account.room_id
+            },
+            {
+                '$push': {
+                    'playerlist': {
+                        'username': user.profile.username
+                    }
+                }
+            });
     } catch (e) {
         ctx.throw(500, e);
         return;
