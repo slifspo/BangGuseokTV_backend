@@ -178,3 +178,45 @@ exports.joinPlayerlist = async (ctx) => {
 
     ctx.status = 204; // No contents
 };
+
+// playerlist 제거
+exports.leavePlayerlist = async (ctx) => {
+    const { user } = ctx.request;
+    const { hostname } = ctx.query;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // hostname 으로 해당 방 찾기
+    let account = null;
+    try {
+        account = await Accounts.findOne({ 'profile.username': hostname });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // playerlist 에서 username 제거
+    try {
+        await Rooms.update(
+            {
+                '_id': account.room_id,
+            },
+            {
+                '$pull': {
+                    'playerlist': {
+                        'username': user.profile.username
+                    }
+                }
+            }
+        );
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.status = 204; // No contents
+};
