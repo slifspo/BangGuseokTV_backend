@@ -73,7 +73,12 @@ io.on('connection', (socket) => {
         io.to(hostname).emit('message', {
             chat: socket.id+"님이 퇴장하셨습니다."
         })
-    })
+    });
+})
+
+// 소켓 연결해제
+io.on('disconnect', (ctx, data) => {
+    console.log('클라이언트 연결해제');
 })
 
 app.listen(port, () => {
