@@ -22,9 +22,13 @@ const Room = new Schema({
     ],
     favoriteCount: { type: Number, default: 0 }, // 즐겨찾기 한 수
     playerlist: [
+        Schema({
+            username: String,
+            socketId: String
+        },
         {
-            username: String
-        }
+            _id: false
+        })
     ],
     user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Account', required: true } // 호스트 유저의 ObjectId
 });
