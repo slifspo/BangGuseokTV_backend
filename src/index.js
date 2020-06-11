@@ -56,20 +56,21 @@ app.use(router.allowedMethods());
 
 io.attach(app);
 
+// 소켓 이벤트 정의
 io.on('connection', (socket) => {
     console.log('클라이언트가 연결됨');
 
     // 방 참가
-    socket.on('roomJoin', (hostId) => {
-        socket.join(hostId);
-        io.to(hostId).emit('message', {
-            chat: socket.id+"님이 "+hostId+" 님의 방에 입장하셨습니다."
+    socket.on('joinRoom', (hostname) => {
+        socket.join(hostname);
+        io.to(hostname).emit('message', {
+            chat: socket.id+"님이 "+hostname+" 님의 방에 입장하셨습니다."
         })
     });
     // 방 나가기
-    socket.on('roomLeave', (hostId) => {
-        socket.leave(hostId);
-        io.to(hostId).emit('message', {
+    socket.on('leaveRoom', (hostname) => {
+        socket.leave(hostname);
+        io.to(hostname).emit('message', {
             chat: socket.id+"님이 퇴장하셨습니다."
         })
     })
