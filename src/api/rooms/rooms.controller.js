@@ -141,7 +141,7 @@ exports.updateProfile = async (ctx) => {
 // playerlist 추가
 exports.joinPlayerlist = async (ctx) => {
     const { user } = ctx.request;
-    const { hostname } = ctx.request.body;
+    const { hostname, socketId } = ctx.request.body;
 
     // 권한 검증
     if (!user) {
@@ -165,9 +165,10 @@ exports.joinPlayerlist = async (ctx) => {
                 '_id': account.room_id
             },
             {
-                '$push': {
+                '$addToSet': {
                     'playerlist': {
-                        'username': user.profile.username
+                        'username': user.profile.username,
+                        'socketId': socketId
                     }
                 }
             });
@@ -199,7 +200,7 @@ exports.leavePlayerlist = async (ctx) => {
         return;
     }
 
-    // playerlist 에서 username 제거
+    // playerlist 에서 제거
     try {
         await Rooms.update(
             {
