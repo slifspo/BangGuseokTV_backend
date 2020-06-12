@@ -3,6 +3,7 @@ const { Schema } = mongoose;
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const { generateToken } = require('lib/token');
+const { number } = require('joi');
 
 // HMAC SHA256 해싱
 function hash(value) {
@@ -25,6 +26,7 @@ const Account = new Schema({
     },
     password: String, // 로컬계정의 경우엔 비밀번호를 해싱해서 저장합니다
     friendlists: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }], // 저장된 친구의 ObjectIds
+    selectedPlaylist: { type: Number, default: 0 },
     playlists: {
         type: Array,
         default: [{
