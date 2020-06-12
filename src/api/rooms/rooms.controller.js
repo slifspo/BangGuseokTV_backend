@@ -3,6 +3,7 @@ const path = require('path');
 const Rooms = require('models/room');
 const Accounts = require('models/account');
 const fs = require('fs');
+const { isPlaying, startPlayerlist } = require('lib/playerlist');
 
 // 방 목록 조회, 한번에 최대 12개씩
 exports.getRooms = async (ctx) => {
@@ -160,7 +161,7 @@ exports.joinPlayerlist = async (ctx) => {
 
     // playerlist 에 username 추가
     try {
-        await Rooms.update(
+        await Rooms.updateOne(
             {
                 '_id': account.room_id
             },
@@ -176,6 +177,12 @@ exports.joinPlayerlist = async (ctx) => {
         ctx.throw(500, e);
         return;
     }
+
+    // playerlist 시작
+    if (isPlaying[hostname] === undefined) // 처음 실행 시
+        isPlaying[hostname] = [];
+    if (isPlaying[hostname][0] !== true) // 해당 방의 playerlist 가 실행중이 아닐 때 playerlist start
+        startPlayerlist(hostname, account.room_id);
 
     ctx.status = 204; // No contents
 };
@@ -202,7 +209,7 @@ exports.leavePlayerlist = async (ctx) => {
 
     // playerlist 에서 제거
     try {
-        await Rooms.update(
+        await Rooms.updateOne(
             {
                 '_id': account.room_id,
             },
