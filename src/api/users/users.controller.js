@@ -217,7 +217,7 @@ exports.addToPlaylist = async (ctx) => {
 
     // 항목 추가
     try {
-        await Accounts.update(
+        await Accounts.updateOne(
             {
                 'profile.username': user.profile.username,
             },
@@ -247,14 +247,14 @@ exports.removeFromPlaylist = async (ctx) => {
 
     // 항목 제거
     try {
-        await Accounts.update(
+        await Accounts.updateOne(
             {
                 'profile.username': user.profile.username,
             },
             {
                 '$unset': { ['playlists.' + playlistIndex + '.videos.' + videoIndex]: 1 } // 배열의 element 를 null 로 만듬
             });
-        await Accounts.update(
+        await Accounts.updateOne(
             {
                 'profile.username': user.profile.username,
             },
@@ -338,7 +338,7 @@ exports.addPlaylist = async (ctx) => {
 
     // 항목 추가
     try {
-        await Accounts.update(
+        await Accounts.updateOne(
             {
                 'profile.username': user.profile.username,
             },
@@ -371,14 +371,14 @@ exports.removePlaylist = async (ctx) => {
 
     // 항목 제거
     try {
-        await Accounts.update(
+        await Accounts.updateOne(
             {
                 'profile.username': user.profile.username,
             },
             {
                 '$unset': { ['playlists.' + playlistIndex]: 1 } // 배열의 element 를 null 로 만듬
             });
-        await Accounts.update(
+        await Accounts.updateOne(
             {
                 'profile.username': user.profile.username,
             },
@@ -391,4 +391,35 @@ exports.removePlaylist = async (ctx) => {
     }
 
     ctx.status = 204; // No Content
+}
+
+// 선택된 재생목록 설정
+exports.updateSelectedPlaylist = async (ctx) => {
+    const { user } = ctx.request;
+    const { selectedPlaylist } = ctx.request.body;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // selectedPlaylist 변경
+    try {
+        await Accounts.updateOne(
+            {
+                'profile.username': user.profile.username
+            },
+            {
+                '$set': {
+                    'selectedPlaylist': selectedPlaylist
+                }
+            }
+        );
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.body = { selectedPlaylist: selectedPlaylist }
 }
