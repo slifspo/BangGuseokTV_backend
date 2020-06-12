@@ -3,7 +3,7 @@ const Accounts = require('models/account');
 
 let isPlaying = {};
 
-const startPlayerlist = async (hostname, room_id) => {
+const startPlayerlist = async (io, hostname, room_id) => {
     // playerlist 실행중으로 바꾸기
     isPlaying[hostname] = [true, null];
 
@@ -21,8 +21,12 @@ const startPlayerlist = async (hostname, room_id) => {
 
     // playerlist 에 아무도 없을 때
     if (firstPlayer === undefined) {
+        //console.log(hostname + ' 방의 playerlist 멈춤');
+        // playerlist 정지
         isPlaying[hostname][0] = false;
-        console.log(hostname + ' 방의 playerlist 멈춤')
+
+        // 빈 문자열을 emit 해서 클라이언트의 player 정지
+        io.to(hostname).emit('sendVideoId', {videoId: ''});
         return;
     }
 
@@ -55,7 +59,12 @@ const startPlayerlist = async (hostname, room_id) => {
 
     // firstPlayer의 firstVideo가 있으면
     if (firstVideo !== undefined) {
-        console.log(firstPlayer.username + ' 의 playlist \'' + account.playlists[selectedPlaylist].name + '\' 의 ' + firstVideo.videoTitle + ' 이 재생중');
+        //console.log(firstPlayer.username + ' 의 playlist \'' + account.playlists[selectedPlaylist].name + '\' 의 ' + firstVideo.videoTitle + ' 이 재생중');
+
+        // videoId를 emit
+        io.to(hostname).emit('sendVideoId', {videoId: firstVideo.videoId});
+
+        // YouTube Data API 로 video duration 얻기
 
         // firstVideo를 배열에서 pop
         try {
@@ -113,7 +122,8 @@ const startPlayerlist = async (hostname, room_id) => {
         // io.emit 으로 대기열에서 나가졌다고 알리기
     }
 
-    const timerObj = setTimeout(startPlayerlist, 3000, hostname, room_id);
+    // 재귀호출
+    const timerObj = setTimeout(startPlayerlist, 3000, io, hostname, room_id);
     isPlaying[hostname][1] = timerObj;
 };
 module.exports = {
