@@ -3,7 +3,7 @@ const Rooms = require('models/room');
 module.exports = (io) => {
     // 소켓 이벤트 정의
     io.on('connection', (socket) => {
-        console.log('클라이언트가 연결됨: ' + socket.id);
+        //console.log('클라이언트가 연결됨: ' + socket.id);
 
         // 방 참가
         socket.on('joinRoom', (hostname) => {
@@ -23,7 +23,7 @@ module.exports = (io) => {
 
     // 소켓 연결해제
     io.on('disconnect', async (ctx, data) => {
-        console.log('클라이언트 연결해제: ' + ctx.socket.id);
+        //console.log('클라이언트 연결해제: ' + ctx.socket.id);
 
         // playerlist 에서 제거
         try {
@@ -41,7 +41,6 @@ module.exports = (io) => {
             );
         } catch (e) {
             console.log(e);
-            return;
         }
     })
 }
