@@ -27,7 +27,7 @@ module.exports = (io) => {
 
         // playerlist 에서 제거
         try {
-            await Rooms.update(
+            await Rooms.updateOne(
                 {
 
                 },
