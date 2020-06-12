@@ -143,7 +143,6 @@ exports.updateProfile = async (ctx) => {
 exports.joinPlayerlist = async (ctx) => {
     const { user } = ctx.request;
     const { hostname, socketId } = ctx.request.body;
-    const { io } = ctx;
 
     // 권한 검증
     if (!user) {
@@ -183,7 +182,7 @@ exports.joinPlayerlist = async (ctx) => {
     if (isPlaying[hostname] === undefined) // 처음 실행 시
         isPlaying[hostname] = [];
     if (isPlaying[hostname][0] !== true) // 해당 방의 playerlist 가 실행중이 아닐 때 playerlist start
-        startPlayerlist(io, hostname, account.room_id); // playerlist 시작
+        startPlayerlist(ctx, hostname, account.room_id); // playerlist 시작
 
     ctx.status = 204; // No contents
 };
