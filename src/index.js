@@ -39,7 +39,7 @@ app.use(koaBody({ // formdata parse
     multipart: true,
     urlencoded: true,
     formidable: {
-        maxFileSize:200 * 1024 * 1024,
+        maxFileSize: 200 * 1024 * 1024,
         keepExtensions: true // 파일 확장자 유지
     },
     formLimit: '5mb'
@@ -52,6 +52,7 @@ passportConfig();
 
 io.attach(app); // socket.io
 require('lib/socket')(io); // socket event 정의
+//app.context.io = io;
 
 router.use('/api', api.routes()); // api 라우트를 /api 경로 하위 라우트로 설정
 app.use(router.routes())
