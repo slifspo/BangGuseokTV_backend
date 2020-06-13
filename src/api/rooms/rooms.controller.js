@@ -242,14 +242,20 @@ exports.leavePlayerlist = async (ctx) => {
     }
     if (room.playerlist[0] === undefined) { // playerlist 가 비어있으면
         if (playState[hostname] !== undefined) {
-            playState[hostname] = [false, null, '', '', null]; // 초기화
             clearTimeout(playState[hostname][1]); // 타이머 해제
+            playState[hostname] = [false, null, '', '', null]; // 초기화
             ctx.io.to(hostname).emit('sendPlayState', { // 클라이언트 playState 초기화
                 username: '',
                 videoId: '',
                 videoDuration: null
             });
         }
+    } else { // playerlist 에 유저가 있으면
+/*         // 유저가 play 중이었을 시
+        if (playState[hostname])
+        // 타이머 해제
+        clearTimeout(playState[hostname][1]); // 현재 타이머 해제 */
+
     }
 
     ctx.status = 204; // No contents
