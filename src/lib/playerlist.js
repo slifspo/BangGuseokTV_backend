@@ -16,7 +16,7 @@ const getTimeLeft = timeout => {
     return timeleft;
 }
 
-const startPlayerlist = async (ctx, hostname, room_id) => {
+const startPlayerlist = async (ctx, hostname) => {
     const { io } = ctx;
     // playState 상태 시작으로 변경
     playState[hostname][0] = true;
@@ -25,7 +25,7 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
     let room = null;
     try {
         room = await Rooms.findOne({
-            '_id': room_id,
+            'hostname': hostname
         });
     } catch (e) {
         console.log(e);
@@ -55,7 +55,7 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
     try {
         await Rooms.updateOne(
             {
-                '_id': room_id,
+                'hostname': hostname
             },
             {
                 '$pop': { playerlist: -1 }
@@ -145,7 +145,7 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
         try {
             await Rooms.updateOne(
                 {
-                    '_id': room_id,
+                    'hostname': hostname
                 },
                 {
                     '$addToSet': {
@@ -167,14 +167,11 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
             videoId: firstVideo.videoId,
             videoDuration: videoDuration
         });
-    } else {
-        console.log(firstPlayer.username + ' 의 ' + account.playlists[selectedPlaylist].name + ' 에 동영상이 없음')
-        // io.emit 으로 대기열에서 나가졌다고 알리기
     }
 
     videoDuration = (videoDuration === null) ? 2 : videoDuration; // 비디오 재생시간
     playState[hostname][4] = videoDuration
-    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, ctx, hostname, room_id); // 재귀타이머 설정
+    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, ctx, hostname); // 재귀타이머 설정
     playState[hostname][1] = timerObj; // 타이머 객체 저장
 };
 module.exports = {
