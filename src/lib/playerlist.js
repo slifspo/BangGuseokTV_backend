@@ -1,7 +1,7 @@
 const Rooms = require('models/room');
 const Accounts = require('models/account');
 
-let isPlaying = {};
+let playState = {}; // [isPlaying?, timerObject, username, videoId]
 
 // convert ISO 8601 duration (ms)
 const convertTime = (youtube_time) => {
@@ -11,8 +11,8 @@ const convertTime = (youtube_time) => {
 
 const startPlayerlist = async (ctx, hostname, room_id) => {
     const { io } = ctx;
-    // playerlist 실행중으로 바꾸기
-    isPlaying[hostname] = [true, null];
+    // playState 상태 시작으로 변경
+    playState[hostname][0] = true;
 
     // playerlist 의 first player 찾기
     let room = null;
@@ -30,12 +30,15 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
     if (firstPlayer === undefined) {
         //console.log(hostname + ' 방의 playerlist 멈춤');
         // playerlist 정지
-        isPlaying[hostname][0] = false;
+        playState[hostname] = [false, null, null, null];
 
         // 빈 문자열을 emit 해서 클라이언트의 player 정지
-        io.to(hostname).emit('sendVideoId', { videoId: '' });
+        io.to(hostname).emit('sendPlayState', { videoId: '' });
         return;
     }
+
+    // 재생중인 username 저장
+    playState[hostname][2] = firstPlayer.username;
 
     // firstPlayer를 배열에서 pop
     try {
@@ -69,8 +72,11 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
     if (firstVideo !== undefined) {
         //console.log(firstPlayer.username + ' 의 playlist \'' + account.playlists[selectedPlaylist].name + '\' 의 ' + firstVideo.videoTitle + ' 이 재생중');
 
-        // videoId를 emit
-        io.to(hostname).emit('sendVideoId', { videoId: firstVideo.videoId });
+        // 재생중인 videoId 저장
+        playState[hostname][3] = firstVideo.videoId;
+        
+        // playState를 emit
+        io.to(hostname).emit('sendPlayState', { videoId: firstVideo.videoId });
 
         // YouTube Data API 로 video duration 얻기
         const optionParams = { // 검색 파라미터
@@ -151,14 +157,10 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
         // io.emit 으로 대기열에서 나가졌다고 알리기
     }
 
-    videoDuration = (videoDuration === null) ? 2000 : videoDuration;
-    //console.log(videoDuration);
-    // 재귀타이머 설정
-    const timerObj = setTimeout(startPlayerlist, videoDuration, ctx, hostname, room_id);
-    isPlaying[hostname][1] = timerObj;
-    //const { getTimeLeft } = require('lib/timer');
-    //setInterval(getTimeLeft, 1000, timerObj);
+    videoDuration = (videoDuration === null) ? 2000 : videoDuration; // 비디오 재생시간
+    const timerObj = setTimeout(startPlayerlist, videoDuration, ctx, hostname, room_id); // 재귀타이머 설정
+    playState[hostname][1] = timerObj; // 타이머 객체 저장
 };
 module.exports = {
-    isPlaying, startPlayerlist
+    playState, startPlayerlist
 }
