@@ -1,12 +1,19 @@
 const Rooms = require('models/room');
 const Accounts = require('models/account');
 
-let playState = {}; // [isPlaying?, timerObject, username, videoId]
+let playState = {}; // [isPlaying, timerObject, username, videoId, videoDuration]
 
-// convert ISO 8601 duration (ms)
+// convert ISO 8601 duration (second)
 const convertTime = (youtube_time) => {
     array = youtube_time.match(/(\d+)(?=[MHS])/ig) || [];
-    return (parseInt(array[0]) * 60 + parseInt(array[1])) * 1000;
+    return parseInt(array[0]) * 60 + parseInt(array[1]);
+}
+
+// 타이머 객체의 남은 시간 반환
+const getTimeLeft = timeout => {
+    const timeleft = Math.ceil((timeout._idleStart + timeout._idleTimeout) / 1000 - process.uptime());
+    //console.log(timeleft);
+    return timeleft;
 }
 
 const startPlayerlist = async (ctx, hostname, room_id) => {
@@ -30,10 +37,14 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
     if (firstPlayer === undefined) {
         //console.log(hostname + ' 방의 playerlist 멈춤');
         // playerlist 정지
-        playState[hostname] = [false, null, '', ''];
+        playState[hostname] = [false, null, '', '', null];
 
-        // 빈 문자열을 emit 해서 클라이언트의 player 정지
-        io.to(hostname).emit('sendPlayState', { videoId: '' });
+        // 클라이언트 playState 초기화
+        io.to(hostname).emit('sendPlayState', {
+            username: '',
+            videoId: '',
+            videoDuration: null
+        });
         return;
     }
 
@@ -74,9 +85,6 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
 
         // 재생중인 videoId 저장
         playState[hostname][3] = firstVideo.videoId;
-        
-        // playState를 emit
-        io.to(hostname).emit('sendPlayState', { videoId: firstVideo.videoId });
 
         // YouTube Data API 로 video duration 얻기
         const optionParams = { // 검색 파라미터
@@ -89,7 +97,7 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
             url += option + "=" + optionParams[option] + "&";
         }
         url = url.substr(0, url.length - 1); //url의마지막에 붙어있는 & 정리
-    
+
         // http 요청
         let res = null;
         try {
@@ -152,15 +160,23 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
             console.log(e);
             return;
         }
+
+        // playState를 emit
+        io.to(hostname).emit('sendPlayState', {
+            username: firstPlayer.username,
+            videoId: firstVideo.videoId,
+            videoDuration: videoDuration
+        });
     } else {
         console.log(firstPlayer.username + ' 의 ' + account.playlists[selectedPlaylist].name + ' 에 동영상이 없음')
         // io.emit 으로 대기열에서 나가졌다고 알리기
     }
 
-    videoDuration = (videoDuration === null) ? 2000 : videoDuration; // 비디오 재생시간
-    const timerObj = setTimeout(startPlayerlist, videoDuration, ctx, hostname, room_id); // 재귀타이머 설정
+    videoDuration = (videoDuration === null) ? 2 : videoDuration; // 비디오 재생시간
+    playState[hostname][4] = videoDuration
+    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, ctx, hostname, room_id); // 재귀타이머 설정
     playState[hostname][1] = timerObj; // 타이머 객체 저장
 };
 module.exports = {
-    playState, startPlayerlist
+    playState, getTimeLeft, startPlayerlist
 }
