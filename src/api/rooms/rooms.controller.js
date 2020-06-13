@@ -151,12 +151,24 @@ exports.joinPlayerlist = async (ctx) => {
         return;
     }
 
-    // hostname 으로 해당 방 찾기
-    let account = null;
+    let account = null
     try {
-        account = await Accounts.findOne({ 'profile.username': hostname });
+        account = await Accounts.findOne({
+            'profile.username': user.profile.username
+        })
     } catch (e) {
         ctx.throw(500, e);
+        return;
+    }
+
+    // 유저가 재생목록이 있는지, 재생목록에 비디오가 있는지 확인
+    const { selectedPlaylist } = account;
+    if (account.playlists[selectedPlaylist] === undefined) {
+        ctx.status = 400; // 잘못된 요청
+        return;
+    }
+    if (account.playlists[selectedPlaylist].videos[0] === undefined) {
+        ctx.status = 400; // 잘못된 요청
         return;
     }
 
@@ -164,7 +176,7 @@ exports.joinPlayerlist = async (ctx) => {
     try {
         await Rooms.updateOne(
             {
-                '_id': account.room_id
+                'hostname': hostname
             },
             {
                 '$addToSet': {
@@ -183,7 +195,7 @@ exports.joinPlayerlist = async (ctx) => {
     if (playState[hostname] === undefined) // 처음 실행 시
         playState[hostname] = [false, null, '', '', null]; // 초기화
     if (playState[hostname][0] !== true) // 해당 방의 playerlist 가 실행중이 아닐 때 playerlist start
-        startPlayerlist(ctx, hostname, account.room_id); // playerlist 시작
+        startPlayerlist(ctx, hostname); // playerlist 시작
 
     ctx.status = 204; // No contents
 };
@@ -203,7 +215,7 @@ exports.leavePlayerlist = async (ctx) => {
     try {
         await Rooms.updateOne(
             {
-                'hostname': hostname,
+                'hostname': hostname
             },
             {
                 '$pull': {
@@ -229,7 +241,7 @@ exports.leavePlayerlist = async (ctx) => {
         return;
     }
     if (room.playerlist[0] === undefined) { // playerlist 가 비어있으면
-        if(playState[hostname] !== undefined) {
+        if (playState[hostname] !== undefined) {
             playState[hostname] = [false, null, '', '', null]; // 초기화
             clearTimeout(playState[hostname][1]); // 타이머 해제
             ctx.io.to(hostname).emit('sendPlayState', { // 클라이언트 playState 초기화
@@ -256,7 +268,7 @@ exports.getPlayState = async (ctx) => {
 
     // 남은시간 얻기
     let timeleft = null;
-    if(playState[hostname] && playState[hostname][1]) {
+    if (playState[hostname] && playState[hostname][1]) {
         timeleft = getTimeLeft(playState[hostname][1]);
     }
 
