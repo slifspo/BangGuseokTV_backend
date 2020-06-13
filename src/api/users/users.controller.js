@@ -55,6 +55,23 @@ exports.localRegister = async (ctx) => {
         return;
     }
 
+    // 방의 hostname 변경
+    try { // 일치하면 profile.verified 를 true 로 업데이트
+        await Rooms.updateOne(
+            {
+                'host_id': account._id
+            },
+            {
+                '$set': {
+                    'hostname': ctx.request.body.username
+                }
+            }
+        );
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
     // 계정의 room_id 필드 업데이트
     try {
         await account.update({ 'room_id': room._id });
@@ -148,10 +165,34 @@ exports.updateUsername = async (ctx) => {
         return;
     }
 
+    // 업데이트된 account 가져옴
+    try {
+        account = await Accounts.findById(user._id);
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 방의 hostname 변경
+    try { // 일치하면 profile.verified 를 true 로 업데이트
+        await Rooms.updateOne(
+            {
+                '_id': account.room_id
+            },
+            {
+                '$set': {
+                    'hostname': username
+                }
+            }
+        );
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
     // 바뀐 profile의 토큰을 다시 생성
     let token = null;
     try {
-        account = await Accounts.findById(user._id);; // 업데이트된 document 가져옴
         token = await account.generateToken();
     } catch (e) {
         ctx.throw(500, e);
@@ -166,9 +207,10 @@ exports.updateUsername = async (ctx) => {
 exports.updateAvatar = async (ctx) => {
     const { user } = ctx.request;
     const { avatar } = ctx.request.body;
+    const { username } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != username) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -176,7 +218,7 @@ exports.updateAvatar = async (ctx) => {
     // 유저 account 찾기
     let account = null;
     try {
-        account = await Accounts.findById(user._id);
+        account = await Accounts.findByUsername(username);
     } catch (e) {
         ctx.throw(500, e);
         return;
@@ -207,10 +249,11 @@ exports.updateAvatar = async (ctx) => {
 // 재생목록에 항목 추가
 exports.addToPlaylist = async (ctx) => {
     const { user } = ctx.request;
-    const { playlistIndex, videoInfo } = ctx.request.body;
+    const { videoInfo } = ctx.request.body;
+    const { username, playlistIndex } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != username) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -219,7 +262,7 @@ exports.addToPlaylist = async (ctx) => {
     try {
         await Accounts.updateOne(
             {
-                'profile.username': user.profile.username,
+                'profile.username': username,
             },
             {
                 '$push': {
@@ -237,10 +280,10 @@ exports.addToPlaylist = async (ctx) => {
 // 재생목록에 항목 제거
 exports.removeFromPlaylist = async (ctx) => {
     const { user } = ctx.request;
-    const { playlistIndex, videoIndex } = ctx.query;
+    const { username, playlistIndex, videoIndex } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != username) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -249,14 +292,14 @@ exports.removeFromPlaylist = async (ctx) => {
     try {
         await Accounts.updateOne(
             {
-                'profile.username': user.profile.username,
+                'profile.username': username,
             },
             {
                 '$unset': { ['playlists.' + playlistIndex + '.videos.' + videoIndex]: 1 } // 배열의 element 를 null 로 만듬
             });
         await Accounts.updateOne(
             {
-                'profile.username': user.profile.username,
+                'profile.username': username,
             },
             {
                 '$pull': { ['playlists.' + playlistIndex + '.videos']: null } // null 인 element 를 없앰
@@ -272,9 +315,10 @@ exports.removeFromPlaylist = async (ctx) => {
 // 재생목록 가져오기
 exports.getPlaylists = async (ctx) => {
     const { user } = ctx.request;
+    const { username } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != username) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -294,10 +338,10 @@ exports.getPlaylists = async (ctx) => {
 // 재생목록의 동영상 가져오기
 exports.getPlaylistVideos = async (ctx) => {
     const { user } = ctx.request;
-    const { playlistIndex } = ctx.query;
+    const { username, playlistIndex } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != username) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -308,7 +352,7 @@ exports.getPlaylistVideos = async (ctx) => {
         result = await Accounts.aggregate([
             {
                 '$match': {
-                    'profile.username': user.profile.username,
+                    'profile.username': username,
                 }
             },
             {
@@ -328,10 +372,11 @@ exports.getPlaylistVideos = async (ctx) => {
 // 새로운 재생목록 추가
 exports.addPlaylist = async (ctx) => {
     const { user } = ctx.request;
+    const { username } = ctx.params;
     const { playlistName } = ctx.request.body;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != username) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -340,7 +385,7 @@ exports.addPlaylist = async (ctx) => {
     try {
         await Accounts.updateOne(
             {
-                'profile.username': user.profile.username,
+                'profile.username': username,
             },
             {
                 '$push': {
@@ -361,10 +406,10 @@ exports.addPlaylist = async (ctx) => {
 // 재생목록에 항목 제거
 exports.removePlaylist = async (ctx) => {
     const { user } = ctx.request;
-    const { playlistIndex } = ctx.query;
+    const { username, playlistIndex } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != username) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -373,14 +418,14 @@ exports.removePlaylist = async (ctx) => {
     try {
         await Accounts.updateOne(
             {
-                'profile.username': user.profile.username,
+                'profile.username': username,
             },
             {
                 '$unset': { ['playlists.' + playlistIndex]: 1 } // 배열의 element 를 null 로 만듬
             });
         await Accounts.updateOne(
             {
-                'profile.username': user.profile.username,
+                'profile.username': username,
             },
             {
                 '$pull': { 'playlists': null } // null 인 element 를 없앰
@@ -396,10 +441,11 @@ exports.removePlaylist = async (ctx) => {
 // 선택된 재생목록 설정
 exports.updateSelectedPlaylist = async (ctx) => {
     const { user } = ctx.request;
+    const { username } = ctx.params;
     const { selectedPlaylist } = ctx.request.body;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != username) {
         ctx.status = 403; // Forbidden
         return;
     }
