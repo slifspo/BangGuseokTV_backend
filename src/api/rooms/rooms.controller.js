@@ -142,7 +142,8 @@ exports.updateProfile = async (ctx) => {
 // playerlist 추가
 exports.joinPlayerlist = async (ctx) => {
     const { user } = ctx.request;
-    const { hostname, socketId } = ctx.request.body;
+    const { hostname } = ctx.params;
+    const { socketId } = ctx.request.body;
 
     // 권한 검증
     if (!user) {
@@ -180,7 +181,7 @@ exports.joinPlayerlist = async (ctx) => {
 
     // playerlist 시작
     if (playState[hostname] === undefined) // 처음 실행 시
-        playState[hostname] = [];
+        playState[hostname] = [false, null, '', '']; // 초기화
     if (playState[hostname][0] !== true) // 해당 방의 playerlist 가 실행중이 아닐 때 playerlist start
         startPlayerlist(ctx, hostname, account.room_id); // playerlist 시작
 
@@ -190,7 +191,7 @@ exports.joinPlayerlist = async (ctx) => {
 // playerlist 제거
 exports.leavePlayerlist = async (ctx) => {
     const { user } = ctx.request;
-    const { hostname } = ctx.query;
+    const { hostname } = ctx.params;
 
     // 권한 검증
     if (!user) {
@@ -198,20 +199,11 @@ exports.leavePlayerlist = async (ctx) => {
         return;
     }
 
-    // hostname 으로 해당 방 찾기
-    let account = null;
-    try {
-        account = await Accounts.findOne({ 'profile.username': hostname });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
-
     // playerlist 에서 제거
     try {
         await Rooms.updateOne(
             {
-                '_id': account.room_id,
+                'hostname': hostname,
             },
             {
                 '$pull': {
@@ -230,17 +222,36 @@ exports.leavePlayerlist = async (ctx) => {
     let room = null;
     try {
         room = await Rooms.findOne({
-            '_id': account.room_id,
+            'hostname': hostname,
         })
     } catch (e) {
         ctx.throw(500, e);
         return;
     }
     if (room.playerlist[0] === undefined) { // playerlist 가 비어있으면
-        playState[hostname][0] = false; // playerlist 정지상태
-        clearTimeout(playState[hostname][1]); // 타이머 해제
-        ctx.io.to(hostname).emit('stopPlayerlist'); // 
+        if(playState[hostname] !== undefined) {
+            playState[hostname] = [false, null, '', '']; // playerlist 정지상태
+            clearTimeout(playState[hostname][1]); // 타이머 해제
+            ctx.io.to(hostname).emit('sendPlayState', { videoId: '' });
+        }
     }
 
     ctx.status = 204; // No contents
+};
+
+// playState 얻기
+exports.getPlayState = async (ctx) => {
+    const { user } = ctx.request;
+    const { hostname } = ctx.params;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    ctx.body = {
+        username: playState[hostname] ? playState[hostname][2] : '',
+        videoId: playState[hostname] ? playState[hostname][3] : ''
+    }
 };
