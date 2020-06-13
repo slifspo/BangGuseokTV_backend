@@ -226,5 +226,21 @@ exports.leavePlayerlist = async (ctx) => {
         return;
     }
 
+    // playerlist 에 한명이라도 있는지 확인
+    let room = null;
+    try {
+        room = await Rooms.findOne({
+            '_id': account.room_id,
+        })
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+    if(room.playerlist[0] === undefined) { // playerlist 가 비어있으면
+        isPlaying[hostname][0] = false; // playerlist 정지상태
+        clearTimeout(isPlaying[hostname][1]); // 타이머 해제
+        ctx.io.to(hostname).emit('stopPlayerlist'); // 
+    }
+
     ctx.status = 204; // No contents
 };
