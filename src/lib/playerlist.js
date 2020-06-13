@@ -28,7 +28,7 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
 
     // playerlist 에 아무도 없을 때
     if (firstPlayer === undefined) {
-        console.log(hostname + ' 방의 playerlist 멈춤');
+        //console.log(hostname + ' 방의 playerlist 멈춤');
         // playerlist 정지
         isPlaying[hostname][0] = false;
 
@@ -67,7 +67,7 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
     let videoDuration = null; // 비디오 재생시간
     // firstPlayer의 firstVideo가 있으면
     if (firstVideo !== undefined) {
-        console.log(firstPlayer.username + ' 의 playlist \'' + account.playlists[selectedPlaylist].name + '\' 의 ' + firstVideo.videoTitle + ' 이 재생중');
+        //console.log(firstPlayer.username + ' 의 playlist \'' + account.playlists[selectedPlaylist].name + '\' 의 ' + firstVideo.videoTitle + ' 이 재생중');
 
         // videoId를 emit
         io.to(hostname).emit('sendVideoId', { videoId: firstVideo.videoId });
@@ -152,12 +152,12 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
     }
 
     videoDuration = (videoDuration === null) ? 2000 : videoDuration;
-    console.log(videoDuration);
+    //console.log(videoDuration);
     // 재귀타이머 설정
     const timerObj = setTimeout(startPlayerlist, videoDuration, ctx, hostname, room_id);
     isPlaying[hostname][1] = timerObj;
-/*     const { getTimeLeft } = require('lib/timer');
-    setInterval(getTimeLeft, 1000, timerObj); */
+    //const { getTimeLeft } = require('lib/timer');
+    //setInterval(getTimeLeft, 1000, timerObj);
 };
 module.exports = {
     isPlaying, startPlayerlist
