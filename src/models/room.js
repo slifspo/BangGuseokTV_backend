@@ -30,22 +30,23 @@ const Room = new Schema({
             _id: false
         })
     ],
-    user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Account', required: true } // 호스트 유저의 ObjectId
+    host_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Account', required: true }, // 호스트 유저의 ObjectId
+    hostname: { type: String } // 호스트 유저의 username
 });
 
 /* ************* */
 /* static 메소드 */
 /* ************* */
 
-// user_id 로 방 검색
-Room.statics.findByUserId = function (user_id) {
-    return this.findOne({ 'user_id': user_id }).exec();
+// host_id 로 방 검색
+Room.statics.findByUserId = function (host_id) {
+    return this.findOne({ 'host_id': host_id }).exec();
 }
 
 // 방 생성
-Room.statics.createRoom = function (user_id) {
+Room.statics.createRoom = function (host_id) {
     const room = new this({
-        user_id: user_id
+        host_id: host_id
     });
 
     return room.save();
@@ -54,10 +55,10 @@ Room.statics.createRoom = function (user_id) {
 // 즐겨찾기수 기준 오름차순, 12개
 Room.statics.getRooms = function () {
     return this.find()
-        .populate('user_id')
+        .populate('host_id')
         .sort('-favoriteCount')
         .limit(12)
-        .select('profile favoriteCount user_id');
+        .select('profile favoriteCount host_id');
 };
 
 /* ************** */
