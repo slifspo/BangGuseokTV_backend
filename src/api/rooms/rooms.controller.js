@@ -3,7 +3,7 @@ const path = require('path');
 const Rooms = require('models/room');
 const Accounts = require('models/account');
 const fs = require('fs');
-const { playState, startPlayerlist } = require('lib/playerlist');
+const { playState, getTimeLeft, startPlayerlist } = require('lib/playerlist');
 
 // 방 목록 조회, 한번에 최대 12개씩
 exports.getRooms = async (ctx) => {
@@ -181,7 +181,7 @@ exports.joinPlayerlist = async (ctx) => {
 
     // playerlist 시작
     if (playState[hostname] === undefined) // 처음 실행 시
-        playState[hostname] = [false, null, '', '']; // 초기화
+        playState[hostname] = [false, null, '', '', null]; // 초기화
     if (playState[hostname][0] !== true) // 해당 방의 playerlist 가 실행중이 아닐 때 playerlist start
         startPlayerlist(ctx, hostname, account.room_id); // playerlist 시작
 
@@ -230,9 +230,13 @@ exports.leavePlayerlist = async (ctx) => {
     }
     if (room.playerlist[0] === undefined) { // playerlist 가 비어있으면
         if(playState[hostname] !== undefined) {
-            playState[hostname] = [false, null, '', '']; // playerlist 정지상태
+            playState[hostname] = [false, null, '', '', null]; // 초기화
             clearTimeout(playState[hostname][1]); // 타이머 해제
-            ctx.io.to(hostname).emit('sendPlayState', { videoId: '' });
+            ctx.io.to(hostname).emit('sendPlayState', { // 클라이언트 playState 초기화
+                username: '',
+                videoId: '',
+                videoDuration: null
+            });
         }
     }
 
@@ -250,8 +254,17 @@ exports.getPlayState = async (ctx) => {
         return;
     }
 
+    // 남은시간 얻기
+    let timeleft = null;
+    if(playState[hostname] && playState[hostname][1]) {
+        timeleft = getTimeLeft(playState[hostname][1]);
+    }
+
+    // 응답객체
     ctx.body = {
         username: playState[hostname] ? playState[hostname][2] : '',
-        videoId: playState[hostname] ? playState[hostname][3] : ''
+        videoId: playState[hostname] ? playState[hostname][3] : '',
+        videoDuration: playState[hostname] ? playState[hostname][4] : null,
+        videoTimeLeft: timeleft
     }
 };
