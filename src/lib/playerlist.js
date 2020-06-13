@@ -30,7 +30,7 @@ const startPlayerlist = async (ctx, hostname, room_id) => {
     if (firstPlayer === undefined) {
         //console.log(hostname + ' 방의 playerlist 멈춤');
         // playerlist 정지
-        playState[hostname] = [false, null, null, null];
+        playState[hostname] = [false, null, '', ''];
 
         // 빈 문자열을 emit 해서 클라이언트의 player 정지
         io.to(hostname).emit('sendPlayState', { videoId: '' });
