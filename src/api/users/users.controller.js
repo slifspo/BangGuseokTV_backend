@@ -454,7 +454,7 @@ exports.updateSelectedPlaylist = async (ctx) => {
     try {
         await Accounts.updateOne(
             {
-                'profile.username': user.profile.username
+                'profile.username': username
             },
             {
                 '$set': {
