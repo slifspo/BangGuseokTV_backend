@@ -195,7 +195,7 @@ exports.joinPlayerlist = async (ctx) => {
     if (playState[hostname] === undefined) // 처음 실행 시
         playState[hostname] = [false, null, '', '', null]; // 초기화
     if (playState[hostname][0] !== true) // 해당 방의 playerlist 가 실행중이 아닐 때 playerlist start
-        startPlayerlist(ctx, hostname); // playerlist 시작
+        startPlayerlist(ctx.io, hostname); // playerlist 시작
 
     ctx.status = 204; // No contents
 };
@@ -251,11 +251,11 @@ exports.leavePlayerlist = async (ctx) => {
             });
         }
     } else { // playerlist 에 유저가 있으면
-/*         // 유저가 play 중이었을 시
-        if (playState[hostname])
-        // 타이머 해제
-        clearTimeout(playState[hostname][1]); // 현재 타이머 해제 */
-
+        if (playState[hostname][2] === user.profile.username) { // play 중인 유저가 나갔을 시
+            clearTimeout(playState[hostname][1]); // 현재 타이머 해제
+            playState[hostname] = [false, null, '', '', null]; // 초기화
+            startPlayerlist(ctx.io, hostname); // playerlist 재시작
+        }
     }
 
     ctx.status = 204; // No contents
@@ -272,17 +272,31 @@ exports.getPlayState = async (ctx) => {
         return;
     }
 
+    // 응답객체
+    ctx.body = {
+        username: playState[hostname] ? playState[hostname][2] : '',
+        videoId: playState[hostname] ? playState[hostname][3] : '',
+        videoDuration: playState[hostname] ? playState[hostname][4] : null,
+    }
+};
+
+exports.getTimeLeft = (ctx) => {
+    const { user } = ctx.request;
+    const { hostname } = ctx.params;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
     // 남은시간 얻기
     let timeleft = null;
     if (playState[hostname] && playState[hostname][1]) {
         timeleft = getTimeLeft(playState[hostname][1]);
     }
 
-    // 응답객체
     ctx.body = {
-        username: playState[hostname] ? playState[hostname][2] : '',
-        videoId: playState[hostname] ? playState[hostname][3] : '',
-        videoDuration: playState[hostname] ? playState[hostname][4] : null,
         videoTimeLeft: timeleft
     }
-};
+}
