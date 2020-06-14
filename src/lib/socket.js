@@ -1,5 +1,5 @@
 const Rooms = require('models/room');
-const { playState } = require('lib/playerlist');
+const { playState, startPlayerlist } = require('lib/playerlist');
 
 module.exports = (io) => {
     // 소켓 이벤트 정의
@@ -40,6 +40,28 @@ module.exports = (io) => {
         if (room === null) return;
         const { hostname } = room;
 
+        // socket id 와 일치하는 playerlist 의 username field 얻기
+        let result = null;
+        try {
+            result = await Rooms.find(
+                {
+                    'hostname': hostname,
+                    'playerlist': {
+                        '$elemMatch': { socketId: ctx.socket.id }
+                    }
+                },
+                {
+                    'playerlist.$.username': 1
+                }
+            )
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+
+        //console.log(result[0]);
+        const { username } = result[0].playerlist[0];
+
         // playerlist 에서 제거
         try {
             await Rooms.updateOne(
@@ -77,6 +99,12 @@ module.exports = (io) => {
                     videoId: '',
                     videoDuration: null
                 });
+            }
+        } else { // playerlist 에 유저가 있으면
+            if (playState[hostname][2] === username) { // play 중인 유저가 나갔을 시
+                clearTimeout(playState[hostname][1]); // 현재 타이머 해제
+                playState[hostname] = [false, null, '', '', null]; // 초기화
+                startPlayerlist(io, hostname); // playerlist 재시작
             }
         }
     })
