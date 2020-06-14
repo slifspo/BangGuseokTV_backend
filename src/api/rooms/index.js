@@ -9,5 +9,6 @@ rooms.patch('/profile', roomsCtrl.updateProfile); // 방 설정 업데이트
 rooms.post('/:hostname/playerlist', roomsCtrl.joinPlayerlist); // playerlist 추가
 rooms.delete('/:hostname/playerlist', roomsCtrl.leavePlayerlist); // playerlist 제거
 rooms.get('/:hostname/playstate', roomsCtrl.getPlayState); // playState 얻기
+rooms.get('/:hostname/timeleft', roomsCtrl.getTimeLeft); // 동영상 남은시간 얻기
 
 module.exports = rooms;
