@@ -346,6 +346,14 @@ exports.getPlaylistVideos = async (ctx) => {
         return;
     }
 
+    if(playlistIndex == -1) {
+        ctx.body = {
+            name: '선택한 재생목록이 없음',
+            videos: []
+        }
+        return;
+    }
+
     // 유저 playlist 찾기
     let result = null;
     try {
