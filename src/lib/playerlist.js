@@ -1,5 +1,6 @@
 const Rooms = require('models/room');
 const Accounts = require('models/account');
+const zenio = require('zenio');
 
 let playState = {}; // [isPlaying, timerObject, username, videoId, videoDuration]
 
@@ -16,8 +17,7 @@ const getTimeLeft = timeout => {
     return timeleft;
 }
 
-const startPlayerlist = async (ctx, hostname) => {
-    const { io } = ctx;
+const startPlayerlist = async (io, hostname) => {
     // playState 상태 시작으로 변경
     playState[hostname][0] = true;
 
@@ -98,12 +98,19 @@ const startPlayerlist = async (ctx, hostname) => {
         }
         url = url.substr(0, url.length - 1); //url의마지막에 붙어있는 & 정리
 
+        // http 요청 옵션 설정
+        zenio.setOptions({
+            json: true, //automatically parsing of JSON response
+            timeout: 3000    //3s timeout
+        })
+
         // http 요청
         let res = null;
         try {
-            res = await ctx.get(url);
+            res = await zenio.get(url);
         } catch (e) {
-            ctx.throw(500, e);
+            console.log(e);
+            return;
         }
 
         // 유튜브 video 의 재생시간 변환
@@ -171,7 +178,7 @@ const startPlayerlist = async (ctx, hostname) => {
 
     videoDuration = (videoDuration === null) ? 2 : videoDuration; // 비디오 재생시간
     playState[hostname][4] = videoDuration
-    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, ctx, hostname); // 재귀타이머 설정
+    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, io, hostname); // 재귀타이머 설정
     playState[hostname][1] = timerObj; // 타이머 객체 저장
 };
 module.exports = {

@@ -1054,13 +1054,6 @@ koa-convert@^1.2.0:
     co "^4.6.0"
     koa-compose "^3.0.0"
 
-koa-http-request@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/koa-http-request/-/koa-http-request-2.2.1.tgz#eb44be4f6977c99f1e4bebcd8902d292f47678c0"
-  integrity sha512-891i1Z3aepyjttEG6FlJtt9bFAMvprkFkd1ZsoR+bnNpmkZe2JdlMnjjh7qWZ55stZJ0P1tX5589q6CWjnbkog==
-  dependencies:
-    zenio "0.0.7"
-
 koa-passport@^4.1.3:
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/koa-passport/-/koa-passport-4.1.3.tgz#6e8eaa48290457af1539bcbed3c52d9defc029c9"
@@ -2015,9 +2008,9 @@ ylru@^1.2.0:
   resolved "https://registry.yarnpkg.com/ylru/-/ylru-1.2.1.tgz#f576b63341547989c1de7ba288760923b27fe84f"
   integrity sha512-faQrqNMzcPCHGVC2aaOINk13K+aaBDUPjGWl0teOXywElLjyVAB6Oe2jj62jHYtwsU49jXhScYbvPENK+6zAvQ==
 
-zenio@0.0.7:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/zenio/-/zenio-0.0.7.tgz#cc12afc3ccfafce337764a904d8c722052eaaff5"
-  integrity sha512-qqBLvPeMVFU/ppIqbUHCjZeFpPaIO4XOLvjcx5xxm0FyPk0BvpeeJAZip8bPEoitalT+knBHCmp+WHTYzns3YQ==
+zenio@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/zenio/-/zenio-0.0.8.tgz#72ee9f7b51dffad57ca891a977d32d994fef23d4"
+  integrity sha512-ndWyJXteneEDDSKj4YAW8y5x2ZxDWM/qa8a/c+AEB1z00dk15y47+ld2T+s/34b1TiH2hUaET4LngMPVa+ktKQ==
   dependencies:
     iconv-lite "^0.4.13"
