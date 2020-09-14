@@ -52,7 +52,7 @@ Room.statics.createRoom = function (host_id) {
     return room.save();
 };
 
-// 즐겨찾기수 기준 오름차순, 12개
+// 즐겨찾기수 기준 내림차순, 12개
 Room.statics.getRooms = function () {
     return this.find()
         .populate('host_id')
