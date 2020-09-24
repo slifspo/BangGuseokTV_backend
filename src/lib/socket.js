@@ -9,15 +9,21 @@ module.exports = (io) => {
         // 방 참가
         socket.on('joinRoom', (hostname) => {
             socket.join(hostname);
-            io.to(hostname).emit('message', {
-                chat: socket.id + "님이 " + hostname + " 님의 방에 입장하셨습니다."
+            io.to(hostname).emit('receiveChat', {
+                type: 'alert',
+                info: {
+                    message: socket.id + "님이 " + hostname + " 님의 방에 입장하셨습니다."
+                }
             })
         });
         // 방 나가기
         socket.on('leaveRoom', (hostname) => {
             socket.leave(hostname);
-            io.to(hostname).emit('message', {
-                chat: socket.id + "님이 퇴장하셨습니다."
+            io.to(hostname).emit('receiveChat', {
+                type: 'alert',
+                info: {
+                    message: socket.id + "님이 퇴장하셨습니다."
+                }
             })
         });
     })
