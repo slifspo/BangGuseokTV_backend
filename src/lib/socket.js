@@ -18,6 +18,7 @@ module.exports = (io) => {
                 }
             })
         });
+
         // 방 나가기
         socket.on('leaveRoom', (data) => {
             const { hostname, username } = data;
@@ -30,6 +31,20 @@ module.exports = (io) => {
                 }
             })
         });
+
+        // 메세지 전송
+        socket.on('sendChat', (data) => {
+            const { hostname, username, avatar, message } = data;
+
+            io.to(hostname).emit('receiveChat', {
+                type: 'chat',
+                info: {
+                    username,
+                    avatar,
+                    message
+                }
+            })
+        })
     })
 
     // 소켓 연결해제
