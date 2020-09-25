@@ -7,22 +7,26 @@ module.exports = (io) => {
         //console.log('클라이언트가 연결됨: ' + socket.id);
 
         // 방 참가
-        socket.on('joinRoom', (hostname) => {
+        socket.on('joinRoom', (data) => {
+            const { hostname, username } = data;
+            
             socket.join(hostname);
             io.to(hostname).emit('receiveChat', {
                 type: 'alert',
                 info: {
-                    message: socket.id + "님이 " + hostname + " 님의 방에 입장하셨습니다."
+                    message: username + " 님이 입장하셨습니다."
                 }
             })
         });
         // 방 나가기
-        socket.on('leaveRoom', (hostname) => {
+        socket.on('leaveRoom', (data) => {
+            const { hostname, username } = data;
+
             socket.leave(hostname);
             io.to(hostname).emit('receiveChat', {
                 type: 'alert',
                 info: {
-                    message: socket.id + "님이 퇴장하셨습니다."
+                    message: username + " 님이 퇴장하셨습니다."
                 }
             })
         });
