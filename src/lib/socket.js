@@ -1,13 +1,27 @@
 const Rooms = require('models/room');
 const { playState, startPlayerlist } = require('lib/playerlist');
+let loginUser = {}; // 소켓에 연결된 로그인한 유저, key: socket.id, value: username
 
 module.exports = (io) => {
     // 소켓 이벤트 정의
     io.on('connection', (socket) => {
         //console.log('클라이언트가 연결됨: ' + socket.id);
 
+        // 초기화
+        socket.on('init', (data) => {
+            //console.log('init: ' + socket.id);
+
+            const { username } = data;
+
+            // 추가
+            loginUser[socket.id] = username;
+            //console.log(loginUser);
+        })
+
         // 방 참가
         socket.on('joinRoom', (data) => {
+            //console.log('joinRoom: ' + socket.id);
+
             const { hostname, username } = data;
             
             socket.join(hostname);
@@ -21,6 +35,8 @@ module.exports = (io) => {
 
         // 방 나가기
         socket.on('leaveRoom', (data) => {
+            //console.log('leaveRoom: ' + socket.id);
+
             const { hostname, username } = data;
 
             socket.leave(hostname);
@@ -50,6 +66,10 @@ module.exports = (io) => {
     // 소켓 연결해제
     io.on('disconnect', async (ctx, data) => {
         //console.log('클라이언트 연결해제: ' + ctx.socket.id);
+
+        // 제거
+        delete loginUser[ctx.socket.id];
+        //console.log(loginUser);
 
         // socket id 가 일치하는 room 을 검색
         let room = null;
