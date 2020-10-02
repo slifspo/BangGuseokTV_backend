@@ -489,15 +489,86 @@ exports.searchUsername = async (ctx) => {
         return;
     }
 
-    // 유저이름 검색
-    let users = null;
+    // 유저의 account 얻기, populate
+    let populatedAccount = null;
     try {
-        // like keyword 이고 대소문자 구분없이 이름검색 
-        users = await Accounts.find({ 'profile.username': { $regex: '.*' + keyword + '.*', $options: 'i' }});
+        populatedAccount = await Accounts.findOne({ '_id': user._id }).populate('friendlist', 'profile');
     } catch (e) {
         ctx.throw(500, e);
         return;
     }
 
-    ctx.body = users.map(user => user.profile);
+    // 키워드에 해당하는 유저이름 모두 검색
+    let detectedUsers = null;
+    try {
+        // like keyword 이고 대소문자 구분없이 이름검색 
+        detectedUsers = await Accounts.find({ 'profile.username': { $regex: '.*' + keyword + '.*', $options: 'i' }});
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 유저의 친구목록과 검색한 유저목록을 비교해서 친구추가가 되어있는지 여부 추가
+    const friendlist = populatedAccount.friendlist.map(data => data.profile.username);
+    const result = detectedUsers.map(user => (
+        {...user.profile, isFriend: friendlist.includes(user.profile.username)}
+    ));
+
+    ctx.body = result
+}
+
+// 친구추가
+exports.addFriend = async (ctx) => {
+    const { user } = ctx.request;
+    const { username } = ctx.params;
+    const { friendname } = ctx.request.body;
+
+    // 권한 검증
+    if (!user || user.profile.username != username) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저의 account 얻기, populate
+    let populatedAccount = null;
+    try {
+        populatedAccount = await Accounts.findOne({ '_id': user._id }).populate('friendlist', 'profile');
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 친구추가할 유저의 account 얻기
+    let friendAccount = null;
+    try {
+        friendAccount = await Accounts.findByUsername(friendname);
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 이미 친구추가가 되어있는지 체크
+    const friendlist = populatedAccount.friendlist.map(data => data.profile.username);
+    if (friendlist.includes(friendAccount.profile.username)) {
+        ctx.status = 406; // Not allowed
+        return;
+    }
+
+    // 친구 추가(oid)
+    try {
+        await Accounts.updateOne(
+            {
+                'profile.username': username,
+            },
+            {
+                '$push': {
+                    'friendlist': friendAccount._id
+                }
+            });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.body = 204; // No Content
 }
