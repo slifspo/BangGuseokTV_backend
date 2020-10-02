@@ -25,7 +25,7 @@ const Account = new Schema({
         googleToken: String
     },
     password: String, // 로컬계정의 경우엔 비밀번호를 해싱해서 저장합니다
-    friendlists: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }], // 저장된 친구의 ObjectIds
+    friendlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }], // 저장된 친구의 ObjectIds
     selectedPlaylist: { type: Number, default: 0 },
     playlists: {
         type: Array,
