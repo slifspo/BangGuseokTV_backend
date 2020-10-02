@@ -477,3 +477,27 @@ exports.updateSelectedPlaylist = async (ctx) => {
 
     ctx.body = { selectedPlaylist: selectedPlaylist }
 }
+
+// 유저이름 검색
+exports.searchUsername = async (ctx) => {
+    const { user } = ctx.request;
+    const { keyword } = ctx.params;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저이름 검색
+    let users = null;
+    try {
+        // like keyword 이고 대소문자 구분없이 이름검색 
+        users = await Accounts.find({ 'profile.username': { $regex: '.*' + keyword + '.*', $options: 'i' }});
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.body = users.map(user => user.profile);
+}
