@@ -514,7 +514,7 @@ exports.searchUsername = async (ctx) => {
         {...user.profile, isFriend: friendlist.includes(user.profile.username)}
     ));
 
-    ctx.body = result
+    ctx.body = result;
 }
 
 // 친구추가
@@ -571,4 +571,34 @@ exports.addFriend = async (ctx) => {
     }
 
     ctx.body = 204; // No Content
+}
+
+// 친구목록 조회
+exports.getFriendlist = async (ctx) => {
+    const { user } = ctx.request;
+    const { username } = ctx.params;
+
+    // 권한 검증
+    if (!user || user.profile.username != username) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저의 account 얻기, populate
+    let populatedAccount = null;
+    try {
+        populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('friendlist', 'profile');
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 친구목록에 온라인/오프라인 여부 표시
+    const { loginUser } = require('lib/socket');
+    const loginUserlist = Object.values(loginUser);
+    const result = populatedAccount.friendlist.map(user => (
+        {...user.profile, isOnline: loginUserlist.includes(user.profile.username)}
+    ));
+
+    ctx.body = result; // No Content
 }
