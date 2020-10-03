@@ -16,5 +16,6 @@ users.post('/:username/playlists/:playlistIndex/videos', usersCtrl.addToPlaylist
 users.delete('/:username/playlists/:playlistIndex/videos/:videoIndex', usersCtrl.removeFromPlaylist); // 재생목록에 항목 제거
 users.patch('/:username/selectedPlaylist', usersCtrl.updateSelectedPlaylist); // 선택된 재생목록 설정
 users.post('/:username/friendlist', usersCtrl.addFriend); // 친구추가
+users.get('/:username/friendlist', usersCtrl.getFriendlist); // 친구목록 조회
 
 module.exports = users;
