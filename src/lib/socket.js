@@ -68,6 +68,12 @@ module.exports = (io) => {
     io.on('disconnect', async (ctx, data) => {
         //console.log('클라이언트 연결해제: ' + ctx.socket.id);
 
+        // 로그인하지 않은 유저라면 여기서 멈춤
+        if (loginSocket[ctx.socket.id] === undefined) return;
+
+        // 유저이름 브로드캐스트
+        io.broadcast('userDisconnected', loginSocket[ctx.socket.id]);
+
         // 유저 제거
         delete loginUser[loginSocket[ctx.socket.id]];
         delete loginSocket[ctx.socket.id];
