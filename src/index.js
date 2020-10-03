@@ -51,7 +51,7 @@ app.use(passport.initialize()); // passport 구동
 passportConfig();
 
 io.attach(app); // socket.io
-require('lib/socket')(io); // socket event 정의
+require('lib/socket').init(io); // socket event 정의
 app.context.io = io; // context(ctx) 에 io를 attach
 
 router.use('/api', api.routes()); // api 라우트를 /api 경로 하위 라우트로 설정
