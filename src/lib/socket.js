@@ -1,9 +1,9 @@
 const Rooms = require('models/room');
 const { playState, startPlayerlist } = require('lib/playerlist');
-let loginUser = {}; // 소켓에 연결된 로그인한 유저, key: username, value: socket.id
-let loginSocket = {}; // key: socket.id, value: username
+let loginUser = {}; // 소켓에 연결된 로그인한 유저, key: socket.id, value: username
 
-module.exports = (io) => {
+module.exports.loginUser = loginUser;
+module.exports.init = (io) => {
     // 소켓 이벤트 정의
     io.on('connection', (socket) => {
         //console.log('클라이언트가 연결됨: ' + socket.id);
@@ -15,8 +15,7 @@ module.exports = (io) => {
             const { username } = data;
 
             // 유저 추가
-            loginUser[username] = socket.id;
-            loginSocket[socket.id] = username;
+            loginUser[socket.id] = username;
         })
 
         // 방 참가
@@ -69,14 +68,13 @@ module.exports = (io) => {
         //console.log('클라이언트 연결해제: ' + ctx.socket.id);
 
         // 로그인하지 않은 유저라면 여기서 멈춤
-        if (loginSocket[ctx.socket.id] === undefined) return;
+        if (loginUser[ctx.socket.id] === undefined) return;
 
         // 유저이름 브로드캐스트
-        io.broadcast('userDisconnected', loginSocket[ctx.socket.id]);
+        io.broadcast('userDisconnected', loginUser[ctx.socket.id]);
 
         // 유저 제거
-        delete loginUser[loginSocket[ctx.socket.id]];
-        delete loginSocket[ctx.socket.id];
+        delete loginUser[ctx.socket.id];
 
         // socket id 가 일치하는 room 을 검색
         let room = null;
