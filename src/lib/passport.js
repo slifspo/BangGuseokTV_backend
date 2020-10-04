@@ -15,7 +15,7 @@ module.exports = () => {
     passport.use(new FacebookStrategy({
         clientID: process.env.FACEBOOK_ID,
         clientSecret: process.env.FACEBOOK_SECRET,
-        callbackURL: 'https://slifspo.github.io/BangGuseokTV_frontend/api/auth/login/facebook/callback',
+        callbackURL: 'https://bangguseoktv.web.app/api/auth/login/facebook/callback',
         session: false, // 세션 사용안함
         profileFields: ['id', 'email', 'displayName']
     }, (accessToken, refreshToken, profile, done) => {
@@ -26,7 +26,7 @@ module.exports = () => {
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_ID,
         clientSecret: process.env.GOOGLE_SECRET,
-        callbackURL: 'https://slifspo.github.io/BangGuseokTV_frontend/api/auth/login/google/callback',
+        callbackURL: 'https://bangguseoktv.web.app/api/auth/login/google/callback',
         session: false, // 세션 사용안함
         profileFields: ['id', 'email', 'displayName']
     }, (accessToken, refreshToken, profile, cb) => {
