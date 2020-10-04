@@ -5,7 +5,6 @@ const passport = require('koa-passport');
 
 // 로컬 로그인
 exports.localLogin = async (ctx) => {
-    console.log('checkcheckcheckcheck');
     // 데이터 검증
     const schema = Joi.object().keys({
         email: Joi.string().email().required(),
