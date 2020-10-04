@@ -30,6 +30,8 @@ module.exports = () => {
         session: false, // 세션 사용안함
         profileFields: ['id', 'email', 'displayName']
     }, (accessToken, refreshToken, profile, cb) => {
+        console.log("구글strategy, profile")
+        console.log(profile);
         return cb(null, profile);
     }));
 }

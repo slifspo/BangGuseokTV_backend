@@ -225,6 +225,7 @@ exports.fbLoginCb = (ctx) => {
 
 // 구글 로그인
 exports.ggLogin = (ctx) => {
+    console.log("구글 로그인 진행");
     passport.authenticate('google', { // 구글 로그인 진행
         authType: 'rerequest',
         scope: ['email']
