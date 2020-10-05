@@ -44,7 +44,7 @@ let corsOptions = {
 // CORS 허용
 app.proxy = true;
 app.use(session({ sameSite: 'none', secure: true }, app));
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(serve(path.join(__dirname, '../public'))); // public폴더에서 정적 파일 제공
 
