@@ -2,6 +2,7 @@ require('dotenv').config(); // .env 파일에서 환경변수 불러오기
 
 const Koa = require('koa');
 const IO = require('koa-socket-2');
+const cors = require('@koa/cors');
 const Router = require('koa-router');
 
 const app = new Koa();
@@ -32,6 +33,8 @@ mongoose.connect(process.env.MONGO_URI).then(
 });
 
 const port = process.env.PORT || 4000; // PORT 값이 설정되어있지 않다면 4000 을 사용합니다.
+
+app.use(cors()); // CORS 허용
 
 app.use(serve(path.join(__dirname, '../public'))); // public폴더에서 정적 파일 제공
 
