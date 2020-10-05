@@ -6,7 +6,7 @@ module.exports.loginUser = loginUser;
 module.exports.init = (io) => {
     // 소켓 이벤트 정의
     io.on('connection', (socket) => {
-        console.log('클라이언트가 연결됨: ' + socket.id);
+        //console.log('클라이언트가 연결됨: ' + socket.id);
 
         // 초기화
         socket.on('init', (data) => {
@@ -65,7 +65,7 @@ module.exports.init = (io) => {
 
     // 소켓 연결해제
     io.on('disconnect', async (ctx, data) => {
-        console.log('클라이언트 연결해제: ' + ctx.socket.id);
+        //console.log('클라이언트 연결해제: ' + ctx.socket.id);
 
         // 로그인하지 않은 유저라면 여기서 멈춤
         if (loginUser[ctx.socket.id] === undefined) return;
