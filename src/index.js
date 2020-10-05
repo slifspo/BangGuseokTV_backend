@@ -4,6 +4,8 @@ const Koa = require('koa');
 const IO = require('koa-socket-2');
 const cors = require('@koa/cors');
 const Router = require('koa-router');
+const session = require('koa-session');
+
 
 const app = new Koa();
 const io = new IO();
@@ -38,7 +40,11 @@ let corsOptions = {
     origin: process.env.CLIENT_HOST, // 허락하고자 하는 요청 주소
     credentials: true
 } 
-app.use(cors(corsOptions)); // CORS 허용
+
+// CORS 허용
+app.proxy = true;
+app.use(session({ sameSite: 'none', secure: true }));
+app.use(cors(corsOptions));
 
 app.use(serve(path.join(__dirname, '../public'))); // public폴더에서 정적 파일 제공
 
