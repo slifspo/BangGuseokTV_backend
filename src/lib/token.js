@@ -56,8 +56,8 @@ exports.jwtMiddleware = async (ctx, next) => {
             ctx.cookies.set('access_token', freshToken, {
                 maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
                 httpOnly: true,
-                SameSite: 'None',
-                Secure
+                sameSite: 'none',
+                secure: true
             });
         }
 
