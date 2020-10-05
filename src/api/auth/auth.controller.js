@@ -312,7 +312,6 @@ exports.ggLoginCb = (ctx) => {
             secure: true
         });
 
-        ctx.redirect('/auth/social');
-        ctx.redirect(process.env.CLIENT_HOST);
+        ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
 }
