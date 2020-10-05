@@ -321,12 +321,7 @@ exports.ggLoginCb = (ctx) => {
             secure: true
         });
         console.log("쿠키에 토큰세팅")
-        //ctx.status = 204; // No Content
 
-        //ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
-        return {
-            failureRedirect: '/auth/login',
-            successRedirect: process.env.CLIENT_HOST + '/auth/social'
-        }
+        ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
 }
