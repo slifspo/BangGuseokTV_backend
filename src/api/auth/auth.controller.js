@@ -313,6 +313,6 @@ exports.ggLoginCb = (ctx) => {
         });
 
         ctx.redirect('/auth/social');
-        ctx.redirect(CLIENT_HOST);
+        ctx.redirect(process.env.CLIENT_HOST);
     })(ctx);
 }
