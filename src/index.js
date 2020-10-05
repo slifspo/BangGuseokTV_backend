@@ -34,7 +34,10 @@ mongoose.connect(process.env.MONGO_URI).then(
 
 const port = process.env.PORT || 4000; // PORT 값이 설정되어있지 않다면 4000 을 사용합니다.
 
-//app.use(cors()); // CORS 허용
+let corsOptions = {
+    origin: process.env.CLIENT_HOST, // 허락하고자 하는 요청 주소
+} 
+app.use(cors(corsOptions)); // CORS 허용
 
 app.use(serve(path.join(__dirname, '../public'))); // public폴더에서 정적 파일 제공
 
