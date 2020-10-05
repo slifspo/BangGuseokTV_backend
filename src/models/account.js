@@ -141,7 +141,7 @@ Account.methods.sendMail = function () {
         to: this.email.address,
         subject: '방구석TV 이메일 인증을 진행해주세요.',
         html: '<h1>이메일 인증을 위해 아래의 링크를 클릭해주세요.</h1><br>' +
-            "<a href='" + host + 'auth/emailverify?email=' + this.email.address + '&key=' + this.email.key_for_verify + "'>이메일 인증하기</a>"
+            "<a href='" + host + '/auth/emailverify?email=' + this.email.address + '&key=' + this.email.key_for_verify + "'>이메일 인증하기</a>"
     }
 
     console.log('이메일 보내기 전')
