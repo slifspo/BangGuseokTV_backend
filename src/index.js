@@ -17,8 +17,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('koa-bodyparser');
 const { jwtMiddleware } = require('lib/token');
 
-const passport = require('koa-passport');
-const passportConfig = require('lib/passport');
+const { passport } = require('lib/passport');
+//const passportConfig = require('lib/passport');
 
 const koaBody = require('koa-body')
 const serve = require('koa-static');
@@ -62,7 +62,8 @@ app.use(bodyParser()); // 바디파서 적용, 라우터 적용코드보다 상�
 app.use(jwtMiddleware); // JWT 처리 미들웨어 적용
 
 app.use(passport.initialize()); // passport 구동
-passportConfig();
+app.use(passport.session());
+require('lib/passport').init();
 
 io.attach(app); // socket.io
 require('lib/socket').init(io); // socket event 정의
