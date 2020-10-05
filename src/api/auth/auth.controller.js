@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const Accounts = require('models/account');
 const Rooms = require('models/room');
-const passport = require('koa-passport');
+const { passport } = require('lib/passport');
 
 // 로컬 로그인
 exports.localLogin = async (ctx) => {
@@ -315,6 +315,11 @@ exports.ggLoginCb = (ctx) => {
             secure: true
         });
         ctx.status = 204; // No Content
+
         //ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
+        return {
+            failureRedirect: '/auth/login',
+            successRedirect: process.env.CLIENT_HOST + '/auth/social'
+        }
     })(ctx);
 }
