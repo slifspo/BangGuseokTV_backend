@@ -254,6 +254,7 @@ exports.ggLogin = (ctx) => {
 
 // 구글 로그인 콜백
 exports.ggLoginCb = (ctx) => {
+    console.log("구글로그인콜백 라우트")
     return passport.authenticate('google', async (err, profile, info) => {
         // 계정 조회
         let account = null;
@@ -264,6 +265,7 @@ exports.ggLoginCb = (ctx) => {
             console.log("계정조회오류")
             console.log(e)
         }
+        console.log("계정조회")
 
         // 계정이 없다면
         if (!account) {
@@ -276,6 +278,7 @@ exports.ggLoginCb = (ctx) => {
                 console.log(e)
             }
         }
+        console.log("계정생성")
 
         // 방이 없을 시 방 생성
         if (account.room_id === undefined) {
@@ -287,15 +290,17 @@ exports.ggLoginCb = (ctx) => {
                 console.log("방생성오류")
                 console.log(e)
             }
+            console.log("방생성")
 
             // 계정의 room_id 필드 업데이트
             try {
                 await account.update({ 'room_id': room._id });
             } catch (e) {
                 ctx.throw(500, e);
-                console.log("계정rood_id필드 업데이트")
+                console.log("계정room_id필드 업데이트")
                 console.log(e)
             }
+            console.log("계정room_id필드 업데이트")
         }
 
         // 토큰 생성
@@ -307,6 +312,7 @@ exports.ggLoginCb = (ctx) => {
             console.log("토큰생성오류")
             console.log(e)
         }
+        console.log("토큰생성")
 
         ctx.cookies.set('access_token', token, {
             httpOnly: true,
@@ -314,6 +320,7 @@ exports.ggLoginCb = (ctx) => {
             sameSite: 'none',
             secure: true
         });
+        console.log("쿠키에 토큰세팅")
         //ctx.status = 204; // No Content
 
         //ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
