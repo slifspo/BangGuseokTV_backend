@@ -134,7 +134,7 @@ Account.methods.sendMail = function () {
         }
     });
 
-    const host = 'http://localhost:3000/' // host 이름
+    const host = process.env.CLIENT_HOST // host 이름
 
     const mailOpt = {
         from: 'hhsw1606@gmail.com',
