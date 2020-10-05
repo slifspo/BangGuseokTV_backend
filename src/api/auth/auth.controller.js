@@ -258,6 +258,8 @@ exports.ggLoginCb = (ctx) => {
             account = await Accounts.findByEmail(profile.emails[0].value);
         } catch (e) {
             ctx.throw(500, e);
+            console.log("계정조회오류")
+            console.log(e)
         }
 
         // 계정이 없다면
@@ -267,6 +269,8 @@ exports.ggLoginCb = (ctx) => {
                 account = await Accounts.socialRegister(profile.emails[0].value);
             } catch (e) {
                 ctx.throw(500, e);
+                console.log("계정생성오류")
+                console.log(e)
             }
         }
 
@@ -277,6 +281,8 @@ exports.ggLoginCb = (ctx) => {
                 room = await Rooms.createRoom(account._id);
             } catch (e) {
                 ctx.throw(500, e);
+                console.log("방생성오류")
+                console.log(e)
             }
 
             // 계정의 room_id 필드 업데이트
@@ -284,6 +290,8 @@ exports.ggLoginCb = (ctx) => {
                 await account.update({ 'room_id': room._id });
             } catch (e) {
                 ctx.throw(500, e);
+                console.log("계정rood_id필드 업데이트")
+                console.log(e)
             }
         }
 
@@ -293,6 +301,8 @@ exports.ggLoginCb = (ctx) => {
             token = await account.generateToken();
         } catch (e) {
             ctx.throw(500, e);
+            console.log("토큰생성오류")
+            console.log(e)
         }
 
         ctx.cookies.set('access_token', token, {
