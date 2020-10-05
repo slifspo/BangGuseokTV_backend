@@ -88,6 +88,9 @@ exports.check = (ctx) => {
         return;
     }
 
+    console.log("로그인체크")
+    console.log(user);
+
     ctx.body = user.profile;
 };
 
