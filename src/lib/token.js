@@ -53,9 +53,10 @@ exports.jwtMiddleware = async (ctx, next) => {
             // 하루가 지나면 갱신해준다.
             const { _id, profile } = decoded;
             const freshToken = await generateToken({ _id, profile }, 'account');
+            console.log("쿠키옵션세팅")
             ctx.cookies.set('access_token', freshToken, {
                 maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
-                httpOnly: false,
+                httpOnly: true,
                 sameSite: 'none',
                 secure: true
             });
