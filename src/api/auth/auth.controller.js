@@ -314,7 +314,7 @@ exports.ggLoginCb = (ctx) => {
             sameSite: 'none',
             secure: true
         });
-        ctx.status = 204; // No Content
+        //ctx.status = 204; // No Content
 
         //ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
         return {
