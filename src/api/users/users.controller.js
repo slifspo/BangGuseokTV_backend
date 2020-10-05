@@ -101,7 +101,12 @@ exports.localRegister = async (ctx) => {
         return;
     }
 
-    ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+    ctx.cookies.set('access_token', token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        sameSite: 'none',
+        secure: true
+    });
     ctx.body = account.profile; // 프로필 정보로 응답합니다.
 };
 
@@ -203,7 +208,12 @@ exports.updateUsername = async (ctx) => {
         return;
     }
 
-    ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+    ctx.cookies.set('access_token', token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        sameSite: 'none',
+        secure: true
+    });
     ctx.body = account.profile.username; // 유저이름으로 응답.
 }
 
@@ -246,7 +256,12 @@ exports.updateAvatar = async (ctx) => {
         return;
     }
 
-    ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+    ctx.cookies.set('access_token', token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        sameSite: 'none',
+        secure: true
+    });
     ctx.body = account.profile.avatar;
 }
 

@@ -42,7 +42,12 @@ exports.localLogin = async (ctx) => {
         ctx.throw(500, e);
     }
 
-    ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+    ctx.cookies.set('access_token', token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        sameSite: 'none',
+        secure: true
+    });
     ctx.body = account.profile;
 };
 
@@ -67,7 +72,9 @@ exports.exists = async (ctx) => {
 exports.logout = (ctx) => {
     ctx.cookies.set('access_token', null, {
         maxAge: 0,
-        httpOnly: true
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true
     });
     ctx.status = 204;
 };
@@ -130,7 +137,12 @@ exports.emailVerify = async (ctx) => {
         ctx.throw(500, e);
     }
 
-    ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+    ctx.cookies.set('access_token', token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        sameSite: 'none',
+        secure: true
+    });
     ctx.status = 204; // No Content
 }
 
@@ -217,7 +229,12 @@ exports.fbLoginCb = (ctx) => {
             ctx.throw(500, e);
         }
 
-        ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+        ctx.cookies.set('access_token', token, {
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+            sameSite: 'none',
+            secure: true
+        });
 
         ctx.redirect('/auth/social');
     })(ctx);
@@ -278,7 +295,12 @@ exports.ggLoginCb = (ctx) => {
             ctx.throw(500, e);
         }
 
-        ctx.cookies.set('access_token', token, { httpOnly: true, maxAge: 1000 * 60 * 60 * 24 * 7 });
+        ctx.cookies.set('access_token', token, {
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+            sameSite: 'none',
+            secure: true
+        });
 
         ctx.redirect('/auth/social');
     })(ctx);
