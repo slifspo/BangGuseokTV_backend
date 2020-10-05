@@ -55,7 +55,7 @@ exports.jwtMiddleware = async (ctx, next) => {
             const freshToken = await generateToken({ _id, profile }, 'account');
             ctx.cookies.set('access_token', freshToken, {
                 maxAge: 1000 * 60 * 60 * 24 * 7, // 7days
-                httpOnly: true,
+                httpOnly: false,
                 sameSite: 'none',
                 secure: true
             });
