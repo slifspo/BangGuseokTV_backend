@@ -38,13 +38,14 @@ const port = process.env.PORT || 4000; // PORT 값이 설정되어있지 않다�
 
 let corsOptions = {
     origin: process.env.CLIENT_HOST, // 허락하고자 하는 요청 주소
-    credentials: true
+    credentials: true,
+    allowedHeaders: "Content-Type, Authorization",
 } 
 
 // CORS 허용
 app.proxy = true;
 app.use(session({ sameSite: 'none', secure: true }, app));
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.use(serve(path.join(__dirname, '../public'))); // public폴더에서 정적 파일 제공
 
