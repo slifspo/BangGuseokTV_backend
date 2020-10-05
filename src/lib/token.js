@@ -61,9 +61,13 @@ exports.jwtMiddleware = async (ctx, next) => {
 
         // ctx.request.user 에 디코딩된 값을 넣어줍니다
         ctx.request.user = decoded;
+
+        console.log("decoded")
+        console.log(decoded)
     } catch (e) {
         // token validate 실패
         ctx.request.user = null;
+        console.log("token validate 실패")
     }
 
     return next();
