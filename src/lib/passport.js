@@ -2,7 +2,8 @@ const passport = require('koa-passport');
 const FacebookStrategy = require('passport-facebook').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-module.exports = () => {
+module.exports.passport = passport;
+module.exports.init = () => {
     passport.serializeUser((user, done) => {
         console.log('debug: serializeUser');
         done(null, user);
@@ -27,7 +28,7 @@ module.exports = () => {
         clientID: process.env.GOOGLE_ID,
         clientSecret: process.env.GOOGLE_SECRET,
         callbackURL: process.env.SERVER_HOST + '/api/auth/login/google/callback',
-        session: false, // 세션 사용안함
+        //session: false, // 세션 사용안함
         profileFields: ['id', 'email', 'displayName']
     }, (accessToken, refreshToken, profile, cb) => {
         console.log("구글strategy, profile")
