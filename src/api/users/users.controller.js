@@ -86,7 +86,11 @@ exports.localRegister = async (ctx) => {
         mail = await account.sendMail();
     } catch (e) {
         ctx.throw(500, e);
+        console.log('이메일 전송 실패');
+        console.log(e);
     }
+
+    console.log('이메일 전송 실행 후')
 
     // 토큰 생성
     let token = null;
