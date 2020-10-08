@@ -17,7 +17,6 @@ module.exports.init = () => {
         clientID: process.env.FACEBOOK_ID,
         clientSecret: process.env.FACEBOOK_SECRET,
         callbackURL: process.env.SERVER_HOST + '/api/auth/login/facebook/callback',
-        session: false, // 세션 사용안함
         profileFields: ['id', 'email', 'displayName']
     }, (accessToken, refreshToken, profile, done) => {
         // accessToken, refreshToken: 페이스북 접근 토큰
@@ -28,11 +27,8 @@ module.exports.init = () => {
         clientID: process.env.GOOGLE_ID,
         clientSecret: process.env.GOOGLE_SECRET,
         callbackURL: process.env.SERVER_HOST + '/api/auth/login/google/callback',
-        //session: false, // 세션 사용안함
         profileFields: ['id', 'email', 'displayName']
     }, (accessToken, refreshToken, profile, cb) => {
-        console.log("구글strategy, profile")
-        console.log(profile);
         return cb(null, profile);
     }));
 }
