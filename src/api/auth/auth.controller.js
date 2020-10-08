@@ -195,77 +195,9 @@ exports.fbLoginCb = (ctx) => {
             account = await Accounts.findByEmail(profile.emails[0].value);
         } catch (e) {
             ctx.throw(500, e);
-        }
-
-        // 계정이 없다면
-        if (!account) {
-            // 계정 생성
-            try {
-                account = await Accounts.socialRegister(profile.emails[0].value);
-            } catch (e) {
-                ctx.throw(500, e);
-            }
-        }
-
-        // 방이 없을 시 방 생성
-        if (account.room_id === undefined) {
-            let room = null;
-            try {
-                room = await Rooms.createRoom(account._id);
-            } catch (e) {
-                ctx.throw(500, e);
-            }
-
-            // 계정의 room_id 필드 업데이트
-            try {
-                await account.update({ 'room_id': room._id });
-            } catch (e) {
-                ctx.throw(500, e);
-            }
-        }
-
-        // 토큰 생성
-        let token = null;
-        try {
-            token = await account.generateToken();
-        } catch (e) {
-            ctx.throw(500, e);
-        }
-
-        ctx.cookies.set('access_token', token, {
-            httpOnly: true,
-            maxAge: 1000 * 60 * 60 * 24 * 7,
-            sameSite: 'none',
-            secure: true
-        });
-
-        ctx.redirect('/auth/social');
-    })(ctx);
-}
-
-// 구글 로그인
-exports.ggLogin = (ctx) => {
-    console.log("구글 로그인 진행");
-    passport.authenticate('google', { // 구글 로그인 진행
-        authType: 'rerequest',
-        scope: ['email']
-    })(ctx);
-}
-
-// 구글 로그인 콜백
-exports.ggLoginCb = (ctx) => {
-    console.log("구글로그인콜백 라우트")
-    return passport.authenticate('google', async (err, profile, info) => {
-        // 계정 조회
-        let account = null;
-        try {
-            account = await Accounts.findByEmail(profile.emails[0].value);
-        } catch (e) {
-            ctx.throw(500, e);
             console.log("계정조회오류")
             console.log(e)
         }
-        console.log("계정조회")
 
         // 계정이 없다면
         if (!account) {
@@ -278,7 +210,6 @@ exports.ggLoginCb = (ctx) => {
                 console.log(e)
             }
         }
-        console.log("계정생성")
 
         // 방이 없을 시 방 생성
         if (account.room_id === undefined) {
@@ -290,17 +221,15 @@ exports.ggLoginCb = (ctx) => {
                 console.log("방생성오류")
                 console.log(e)
             }
-            console.log("방생성")
 
             // 계정의 room_id 필드 업데이트
             try {
                 await account.update({ 'room_id': room._id });
             } catch (e) {
                 ctx.throw(500, e);
-                console.log("계정room_id필드 업데이트")
+                console.log("계정 room_id필드 업데이트 오류")
                 console.log(e)
             }
-            console.log("계정room_id필드 업데이트")
         }
 
         // 토큰 생성
@@ -312,7 +241,6 @@ exports.ggLoginCb = (ctx) => {
             console.log("토큰생성오류")
             console.log(e)
         }
-        console.log("토큰생성")
 
         ctx.cookies.set('access_token', token, {
             httpOnly: true,
@@ -320,7 +248,81 @@ exports.ggLoginCb = (ctx) => {
             sameSite: 'none',
             secure: true
         });
-        console.log("쿠키에 토큰세팅")
+
+        ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
+    })(ctx);
+}
+
+// 구글 로그인
+exports.ggLogin = (ctx) => {
+    passport.authenticate('google', { // 구글 로그인 진행
+        authType: 'rerequest',
+        scope: ['email']
+    })(ctx);
+}
+
+// 구글 로그인 콜백
+exports.ggLoginCb = (ctx) => {
+    return passport.authenticate('google', async (err, profile, info) => {
+        // 계정 조회
+        let account = null;
+        try {
+            account = await Accounts.findByEmail(profile.emails[0].value);
+        } catch (e) {
+            ctx.throw(500, e);
+            console.log("계정조회오류")
+            console.log(e)
+        }
+
+        // 계정이 없다면
+        if (!account) {
+            // 계정 생성
+            try {
+                account = await Accounts.socialRegister(profile.emails[0].value);
+            } catch (e) {
+                ctx.throw(500, e);
+                console.log("계정생성오류")
+                console.log(e)
+            }
+        }
+
+        // 방이 없을 시 방 생성
+        if (account.room_id === undefined) {
+            let room = null;
+            try {
+                room = await Rooms.createRoom(account._id);
+            } catch (e) {
+                ctx.throw(500, e);
+                console.log("방생성오류")
+                console.log(e)
+            }
+
+            // 계정의 room_id 필드 업데이트
+            try {
+                await account.update({ 'room_id': room._id });
+            } catch (e) {
+                ctx.throw(500, e);
+                console.log("계정 room_id필드 업데이트 오류")
+                console.log(e)
+            }
+        }
+
+        // 토큰 생성
+        let token = null;
+        try {
+            token = await account.generateToken();
+        } catch (e) {
+            ctx.throw(500, e);
+            console.log("토큰생성오류")
+            console.log(e)
+        }
+
+        ctx.cookies.set('access_token', token, {
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+            sameSite: 'none',
+            secure: true
+        });
 
         ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
