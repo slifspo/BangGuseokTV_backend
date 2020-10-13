@@ -6,6 +6,34 @@ const { playState, startPlayerlist } = require('lib/playerlist');
 const loginUsername = new Map(); // key: username, value: socket.id
 const loginSocketId = new Map(); // key: socket.id, value: username
 
+// 친구목록에 있는 유저에게 disconnect 알리기
+const noticeDisconnected = async (disconnUsername) => {
+    // 연결해제한 유저의 친구목록 불러옴
+    let account = null;
+    try {
+        account = await Accounts.findOne({'profile.username': disconnUsername}).populate('friendlist', 'profile');
+    } catch (e) {
+        console.log(e);
+        return;
+    }
+
+    // 친구목록 추출
+    const friendlist = account.friendlist.map(user => (
+        user.profile.username
+    ));
+
+    // 친구목록의 유저들에게 메세지 보내기
+    friendlist.forEach(username => {
+        if (loginUsername.has(username)) {
+            const friendSocketId = loginUsername.get(username);
+            io.to(friendSocketId).emit('userDisconnected', disconnUsername);
+            console.log("from: " + disconnUsername + " to: " + username);
+        }
+    });
+
+    return;
+}
+
 module.exports.loginUsername = loginUsername;
 module.exports.loginSocketId = loginSocketId;
 module.exports.init = (io) => {
@@ -22,9 +50,6 @@ module.exports.init = (io) => {
             // 유저정보 업데이트
             loginUsername.set(username, socket.id);
             loginSocketId.set(socket.id, username);
-
-            // 개인메세지를 위한 방
-            //socket.join(socket.id);
         })
 
         // 방 참가
@@ -81,31 +106,8 @@ module.exports.init = (io) => {
 
         const disconnUsername = loginSocketId.get(ctx.socket.id);
 
-        // 연결해제한 유저의 친구목록 불러옴
-        let account = null;
-        try {
-            account = await Accounts.findOne({'profile.username': disconnUsername}).populate('friendlist', 'profile');
-        } catch (e) {
-            console.log(e);
-            return;
-        }
-
-        // 친구목록 추출
-        const friendlist = account.friendlist.map(user => (
-            user.profile.username
-        ));
-
-        console.log(disconnUsername + " 의 friendlist");
-        console.log(friendlist);
-
-        // 친구목록의 유저들에게 메세지 보내기
-        friendlist.forEach(username => {
-            if (loginUsername.has(username)) {
-                const friendSocketId = loginUsername.get(username);
-                io.to(friendSocketId).emit('userDisconnected', disconnUsername);
-                console.log("from: " + disconnUsername + " to: " + username);
-            }
-        });
+        // 친구목록에 있는 유저에게 disconnect 알리기
+        await noticeDisconnected(disconnUsername);
 
         // 유저 제거
         loginUsername.delete(disconnUsername);
