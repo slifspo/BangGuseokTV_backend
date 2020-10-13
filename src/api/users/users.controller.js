@@ -511,7 +511,9 @@ exports.searchUsername = async (ctx) => {
     // 유저의 account 얻기, populate
     let populatedAccount = null;
     try {
-        populatedAccount = await Accounts.findOne({ '_id': user._id }).populate('friendlist', 'profile');
+        populatedAccount = await Accounts.findOne({ '_id': user._id })
+                                            .populate('friendlist', 'profile')
+                                            .populate('sentFriendRequests', 'profile');
     } catch (e) {
         ctx.throw(500, e);
         return;
@@ -530,10 +532,15 @@ exports.searchUsername = async (ctx) => {
     // 자기자신은 제외
     const filteredUser = detectedUsers.filter(user => user.profile.username !== populatedAccount.profile.username);
 
-    // 유저의 친구목록과 검색한 유저목록을 비교해서 친구추가가 되어있는지 여부 추가
+    // 유저의 친구목록과 검색한 유저목록을 비교해서 친구추가가 되어있는지/친구요청 보내져있는지 여부 추가
     const friendlist = populatedAccount.friendlist.map(user => user.profile.username);
+    const sentFriendRequests = populatedAccount.sentFriendRequests.map(user => user.profile.username);
     const result = filteredUser.map(user => (
-        {...user.profile, isFriend: friendlist.includes(user.profile.username)}
+        {
+            ...user.profile,
+            isFriend: friendlist.includes(user.profile.username)
+                    || sentFriendRequests.includes(user.profile.username)
+        }
     ));
 
     ctx.body = result;
