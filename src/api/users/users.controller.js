@@ -616,10 +616,9 @@ exports.getFriendlist = async (ctx) => {
     }
 
     // 친구목록에 온라인/오프라인 여부 표시
-    const { loginUser } = require('lib/socket');
-    const loginUserlist = Object.values(loginUser);
+    const { loginUsername } = require('lib/socket');
     const result = populatedAccount.friendlist.map(user => (
-        {...user.profile, isOnline: loginUserlist.includes(user.profile.username)}
+        {...user.profile, isOnline: loginUsername.has(user.profile.username)}
     ));
 
     ctx.body = result; // No Content
