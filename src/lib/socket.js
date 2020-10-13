@@ -95,10 +95,16 @@ module.exports.init = (io) => {
             user.profile.username
         ));
 
+        console.log(disconnUsername + " 의 friendlist");
+        console.log(friendlist);
+
         // 친구목록의 유저들에게 메세지 보내기
         friendlist.forEach(username => {
-            const friendSocketId = loginUsername.get(username);
-            io.to(friendSocketId).emit('userDisconnected', disconnUsername);
+            if (loginUsername.has(username)) {
+                const friendSocketId = loginUsername.get(username);
+                io.to(friendSocketId).emit('userDisconnected', disconnUsername);
+                console.log("from: " + disconnUsername + " to: ")
+            }
         });
 
         // 유저이름 브로드캐스트
