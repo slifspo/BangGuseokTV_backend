@@ -76,10 +76,10 @@ module.exports.init = (io) => {
     io.on('disconnect', async (ctx, data) => {
         //console.log('클라이언트 연결해제: ' + ctx.socket.id);
 
-        const disconnUsername = loginSocketId[ctx.socket.id];
-
         // 로그인하지 않은 유저라면 여기서 멈춤
-        if (disconnUsername === undefined) return;
+        if (!loginSocketId.has(ctx.socket.id)) return;
+
+        const disconnUsername = loginSocketId.get(ctx.socket.id);
 
         // 연결해제한 유저의 친구목록 불러옴
         let account = null;
@@ -106,9 +106,6 @@ module.exports.init = (io) => {
                 console.log("from: " + disconnUsername + " to: ")
             }
         });
-
-        // 유저이름 브로드캐스트
-        //io.broadcast('userDisconnected', loginUsername[ctx.socket.id]);
 
         // 유저 제거
         loginUsername.delete(disconnUsername);
