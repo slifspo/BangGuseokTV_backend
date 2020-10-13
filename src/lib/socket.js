@@ -24,7 +24,7 @@ module.exports.init = (io) => {
             loginSocketId.set(socket.id, username);
 
             // 개인메세지를 위한 방
-            socket.join(socket.id);
+            //socket.join(socket.id);
         })
 
         // 방 참가
@@ -103,7 +103,7 @@ module.exports.init = (io) => {
             if (loginUsername.has(username)) {
                 const friendSocketId = loginUsername.get(username);
                 io.to(friendSocketId).emit('userDisconnected', disconnUsername);
-                console.log("from: " + disconnUsername + " to: ")
+                console.log("from: " + disconnUsername + " to: " + username);
             }
         });
 
