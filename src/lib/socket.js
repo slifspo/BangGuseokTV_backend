@@ -1,8 +1,13 @@
 const Rooms = require('models/room');
+const Accounts = require('models/account');
 const { playState, startPlayerlist } = require('lib/playerlist');
-let loginUser = {}; // 소켓에 연결된 로그인한 유저, key: socket.id, value: username
 
-module.exports.loginUser = loginUser;
+// 추가,삭제가 잦으므로 Map 사용
+const loginUsername = new Map(); // key: username, value: socket.id
+const loginSocketId = new Map(); // key: socket.id, value: username
+
+module.exports.loginUsername = loginUsername;
+module.exports.loginSocketId = loginSocketId;
 module.exports.init = (io) => {
     // 소켓 이벤트 정의
     io.on('connection', (socket) => {
@@ -14,8 +19,9 @@ module.exports.init = (io) => {
 
             const { username } = data;
 
-            // 유저 추가
-            loginUser[socket.id] = username;
+            // 유저정보 업데이트
+            loginUsername.set(username, socket.id);
+            loginSocketId.set(socket.id, username);
         })
 
         // 방 참가
@@ -67,14 +73,37 @@ module.exports.init = (io) => {
     io.on('disconnect', async (ctx, data) => {
         //console.log('클라이언트 연결해제: ' + ctx.socket.id);
 
+        const disconnUsername = loginSocketId[ctx.socket.id];
+
         // 로그인하지 않은 유저라면 여기서 멈춤
-        if (loginUser[ctx.socket.id] === undefined) return;
+        if (disconnUsername === undefined) return;
+
+        // 연결해제한 유저의 친구목록 불러옴
+        let account = null;
+        try {
+            account = await Accounts.findOne({'profile.username': disconnUsername}).populate('friendlist', 'profile');
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+
+        // 친구목록 추출
+        const friendlist = account.friendlist.map(user => (
+            user.profile.username
+        ));
+
+        // 친구목록의 유저들에게 메세지 보내기
+        friendlist.forEach(username => {
+            const friendSocketId = loginUsername.get(username);
+            io.to(friendSocketId).emit('userDisconnected', disconnUsername);
+        });
 
         // 유저이름 브로드캐스트
-        io.broadcast('userDisconnected', loginUser[ctx.socket.id]);
+        //io.broadcast('userDisconnected', loginUsername[ctx.socket.id]);
 
         // 유저 제거
-        delete loginUser[ctx.socket.id];
+        loginUsername.delete(disconnUsername);
+        loginSocketId.delete(ctx.socket.id);
 
         // socket id 가 일치하는 room 을 검색
         let room = null;
