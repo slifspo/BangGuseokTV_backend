@@ -7,7 +7,7 @@ const loginUsername = new Map(); // key: username, value: socket.id
 const loginSocketId = new Map(); // key: socket.id, value: username
 
 // 친구목록에 있는 유저에게 disconnect 알리기
-const noticeDisconnected = async (disconnUsername) => {
+const noticeDisconnected = async (disconnUsername, io) => {
     // 연결해제한 유저의 친구목록 불러옴
     let account = null;
     try {
@@ -107,7 +107,7 @@ module.exports.init = (io) => {
         const disconnUsername = loginSocketId.get(ctx.socket.id);
 
         // 친구목록에 있는 유저에게 disconnect 알리기
-        await noticeDisconnected(disconnUsername);
+        await noticeDisconnected(disconnUsername, io);
 
         // 유저 제거
         loginUsername.delete(disconnUsername);
