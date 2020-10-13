@@ -34,10 +34,13 @@ const noticeDisconnected = async (disconnUsername, io) => {
     return;
 }
 
+// Exports
 module.exports.loginUsername = loginUsername;
 module.exports.loginSocketId = loginSocketId;
+
+// 소켓 이벤트 선언
 module.exports.init = (io) => {
-    // 소켓 이벤트 정의
+    // 소켓 연결
     io.on('connection', (socket) => {
         //console.log('클라이언트가 연결됨: ' + socket.id);
 
@@ -113,6 +116,10 @@ module.exports.init = (io) => {
         loginUsername.delete(disconnUsername);
         loginSocketId.delete(ctx.socket.id);
 
+        /* 
+         * 유저가 playerlist에 참가한상태로 disconnect했을 경우 
+         * playerlist에서 나가게하기 
+         */
         // socket id 가 일치하는 room 을 검색
         let room = null;
         try {
