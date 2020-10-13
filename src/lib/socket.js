@@ -22,6 +22,9 @@ module.exports.init = (io) => {
             // 유저정보 업데이트
             loginUsername.set(username, socket.id);
             loginSocketId.set(socket.id, username);
+
+            // 개인메세지를 위한 방
+            socket.join(socket.id);
         })
 
         // 방 참가
