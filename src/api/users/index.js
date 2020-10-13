@@ -15,7 +15,9 @@ users.get('/:username/playlists/:playlistIndex/videos', usersCtrl.getPlaylistVid
 users.post('/:username/playlists/:playlistIndex/videos', usersCtrl.addToPlaylist); // 재생목록에 항목 추가
 users.delete('/:username/playlists/:playlistIndex/videos/:videoIndex', usersCtrl.removeFromPlaylist); // 재생목록에 항목 제거
 users.patch('/:username/selectedPlaylist', usersCtrl.updateSelectedPlaylist); // 선택된 재생목록 설정
-users.post('/:username/friendlist', usersCtrl.sendFriendRequest); // 친구추가
+users.post('/:username/sentFriendRequests', usersCtrl.sendFriendRequest); // 친구요청
 users.get('/:username/friendlist', usersCtrl.getFriendlist); // 친구목록 조회
+users.get('/:username/sentFriendRequests', usersCtrl.getSentFriendRequests); // 보낸 친구요청 조회
+users.get('/:username/receivedFriendRequests', usersCtrl.getReceivedFriendRequests); // 받은 친구요청 조회
 
 module.exports = users;

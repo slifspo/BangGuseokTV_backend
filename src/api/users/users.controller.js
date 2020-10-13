@@ -655,3 +655,55 @@ exports.getFriendlist = async (ctx) => {
 
     ctx.body = result; // No Content
 }
+
+// 보낸 친구요청 조회
+exports.getSentFriendRequests = async (ctx) => {
+    const { user } = ctx.request;
+    const { username } = ctx.params;
+
+    // 권한 검증
+    if (!user || user.profile.username != username) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저의 account 얻기, populate
+    let populatedAccount = null;
+    try {
+        populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('sentFriendRequests', 'profile');
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // profile 만 추출
+    const result = populatedAccount.sentFriendRequests.map(user => user.profile);
+
+    ctx.body = result; // No Content
+}
+
+// 받은 친구요청 조회
+exports.getReceivedFriendRequests = async (ctx) => {
+    const { user } = ctx.request;
+    const { username } = ctx.params;
+
+    // 권한 검증
+    if (!user || user.profile.username != username) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저의 account 얻기, populate
+    let populatedAccount = null;
+    try {
+        populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('receivedFriendRequests', 'profile');
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // profile 만 추출
+    const result = populatedAccount.receivedFriendRequests.map(user => user.profile);
+
+    ctx.body = result; // No Content
+}
