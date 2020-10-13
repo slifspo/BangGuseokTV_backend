@@ -540,7 +540,7 @@ exports.searchUsername = async (ctx) => {
 }
 
 // 친구추가
-exports.addFriend = async (ctx) => {
+exports.sendFriendRequest = async (ctx) => {
     const { user } = ctx.request;
     const { username } = ctx.params;
     const { friendname } = ctx.request.body;
@@ -554,7 +554,9 @@ exports.addFriend = async (ctx) => {
     // 유저의 account 얻기, populate
     let populatedAccount = null;
     try {
-        populatedAccount = await Accounts.findOne({ '_id': user._id }).populate('friendlist', 'profile');
+        populatedAccount = await Accounts.findOne({ '_id': user._id })
+                                        .populate('friendlist', 'profile')
+                                        .populate('sentFriendRequests', 'profile');
     } catch (e) {
         ctx.throw(500, e);
         return;
@@ -563,7 +565,7 @@ exports.addFriend = async (ctx) => {
     // 친구추가할 유저의 account 얻기
     let friendAccount = null;
     try {
-        friendAccount = await Accounts.findByUsername(friendname);
+        friendAccount = await Accounts.findOne({ 'profile.username': friendname });
     } catch (e) {
         ctx.throw(500, e);
         return;
@@ -576,7 +578,14 @@ exports.addFriend = async (ctx) => {
         return;
     }
 
-    // 친구 추가(oid)
+    // 이미 친구요청을 보냈는지 체크
+    const sentFriendRequests = populatedAccount.sentFriendRequests.map(data => data.profile.username);
+    if (sentFriendRequests.includes(friendAccount.profile.username)) {
+        ctx.status = 406; // Not allowed
+        return;
+    }
+
+    // 친구 추가 요청 보내기(sent)
     try {
         await Accounts.updateOne(
             {
@@ -584,7 +593,23 @@ exports.addFriend = async (ctx) => {
             },
             {
                 '$push': {
-                    'friendlist': friendAccount._id
+                    'sentFriendRequests': friendname._id
+                }
+            });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 친구 추가 요청 보내기(received)
+    try {
+        await Accounts.updateOne(
+            {
+                'profile.username': friendname,
+            },
+            {
+                '$push': {
+                    'receivedFriendRequests': username._id
                 }
             });
     } catch (e) {
