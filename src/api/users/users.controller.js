@@ -593,7 +593,7 @@ exports.sendFriendRequest = async (ctx) => {
             },
             {
                 '$push': {
-                    'sentFriendRequests': friendname._id
+                    'sentFriendRequests': friendAccount._id
                 }
             });
     } catch (e) {
@@ -609,7 +609,7 @@ exports.sendFriendRequest = async (ctx) => {
             },
             {
                 '$push': {
-                    'receivedFriendRequests': username._id
+                    'receivedFriendRequests': populatedAccount._id
                 }
             });
     } catch (e) {
