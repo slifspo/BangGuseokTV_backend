@@ -770,7 +770,7 @@ exports.deleteSentFriendRequest = async (ctx) => {
     const { username, friendname } = ctx.params;
 
     // 권한 검증
-    if (!user || user.profile.username != username) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
