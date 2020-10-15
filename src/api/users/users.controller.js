@@ -610,10 +610,7 @@ exports.addFriendlist = async (ctx) => {
 
     // 친구추가가 되어있는지 체크 후 친구추가
     const friendlist = populatedAccount.friendlist.map(data => data.profile.username);
-    if (friendlist.includes(friendAccount.profile.username)) {
-        ctx.status = 406; // Not allowed
-        return;
-    } else {
+    if (!friendlist.includes(friendAccount.profile.username)) {
         try {
             await Accounts.updateOne(
                 {
