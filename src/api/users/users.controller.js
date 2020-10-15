@@ -833,7 +833,7 @@ exports.getReceivedFriendRequests = async (ctx) => {
 }
 
 // 받은 친구요청 제거
-exports.deleteSentFriendRequest = async (ctx) => {
+exports.deleteReceivedFriendRequest = async (ctx) => {
     const { user } = ctx.request;
     const { username, friendname } = ctx.params;
 
