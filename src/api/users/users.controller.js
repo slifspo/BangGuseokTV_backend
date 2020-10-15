@@ -787,7 +787,7 @@ exports.deleteSentFriendRequest = async (ctx) => {
     // 친구 추가 요청 제거
     let res;
     try {
-        res = await Accounts.updateOne(
+        res = await Accounts.findOneAndUpdate(
             {
                 'profile.username': username,
             },
