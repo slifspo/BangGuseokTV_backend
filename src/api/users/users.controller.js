@@ -610,7 +610,10 @@ exports.addFriendlist = async (ctx) => {
 
     // 친구추가가 되어있는지 체크 후 친구추가
     const friendlist = populatedAccount.friendlist.map(data => data.profile.username);
-    if (!friendlist.includes(friendAccount.profile.username)) {
+    if (friendlist.includes(friendAccount.profile.username)) {
+        ctx.status = 406; // Not allowed
+        return;
+    } else {
         try {
             await Accounts.updateOne(
                 {
@@ -627,39 +630,34 @@ exports.addFriendlist = async (ctx) => {
         }
     }
 
-    // 친구 추가 요청 제거(sent)
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$pull': {
-                    'sentFriendRequests': friendAccount._id
-                }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
-
-    // 친구 추가 요청 제거(received)
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': friendname,
-            },
-            {
-                '$pull': {
-                    'receivedFriendRequests': populatedAccount._id
-                }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
-
     ctx.body = 204; // No Content
+}
+
+// 친구 조회
+exports.getFriend = async (ctx) => {
+    const { user } = ctx.request;
+    const { username, friendname } = ctx.params;
+
+    // 권한 검증
+    if (!user || user.profile.username != username) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 유저의 account 얻기
+    let populatedAccount = null;
+    try {
+        populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('friendlist', 'profile');
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 친구목록에서 friendname인 프로필 찾기
+    const foundUser = populatedAccount.friendlist.find(user => user.profile.username === friendname);
+
+    // 찾았다면 profile 응답, 아니라면 null
+    ctx.body = (foundUser !== undefined) ? foundUser.profile : null;
 }
 
 // 보낸 친구요청 조회

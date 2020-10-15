@@ -20,6 +20,7 @@ users.patch('/:username/selectedPlaylist', usersCtrl.updateSelectedPlaylist); //
 
 users.get('/:username/friendlist', usersCtrl.getFriendlist); // 친구목록 조회
 users.post('/:username/friendlist', usersCtrl.addFriendlist); // 친구추가
+users.get('/:username/friendlist/:friendname', usersCtrl.getFriend); // 친구 조회
 
 users.get('/:username/sentFriendRequests', usersCtrl.getSentFriendRequests); // 보낸 친구요청 조회
 users.post('/:username/sentFriendRequests', usersCtrl.sendFriendRequest); // 친구요청
