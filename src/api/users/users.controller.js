@@ -801,8 +801,6 @@ exports.deleteSentFriendRequest = async (ctx) => {
         return;
     }
 
-    console.log(res);
-
     ctx.body = 204; // No Content
 }
 
