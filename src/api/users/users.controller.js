@@ -767,6 +767,45 @@ exports.sendFriendRequest = async (ctx) => {
     ctx.body = 204; // No Content
 }
 
+// 보낸 친구요청 제거
+exports.deleteSentFriendRequest = async (ctx) => {
+    const { user } = ctx.request;
+    const { username, friendname } = ctx.params;
+
+    // 권한 검증
+    if (!user || user.profile.username != username) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // friendname 유저의 account 얻기
+    let friendAccount = null;
+    try {
+        friendAccount = await Accounts.findOne({ 'profile.username': friendname });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 친구 추가 요청 제거
+    try {
+        await Accounts.updateOne(
+            {
+                'profile.username': username,
+            },
+            {
+                '$pull': {
+                    'sentFriendRequests': friendAccount._id
+                }
+            });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.body = 204; // No Content
+}
+
 // 받은 친구요청 조회
 exports.getReceivedFriendRequests = async (ctx) => {
     const { user } = ctx.request;
