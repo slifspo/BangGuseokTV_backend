@@ -785,18 +785,16 @@ exports.deleteSentFriendRequest = async (ctx) => {
     }
 
     // 친구 추가 요청 제거
-    let res;
     try {
-        res = await Accounts.findOneAndUpdate(
+        await Accounts.updateOne(
             {
                 'profile.username': username,
             },
             {
                 '$pull': {
-                    'sentFriendRequests': [friendAccount._id]
+                    'sentFriendRequests': friendAccount._id
                 }
-            },
-            {new:true}
+            }
         );
     } catch (e) {
         ctx.throw(500, e);
