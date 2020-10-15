@@ -769,6 +769,10 @@ exports.deleteSentFriendRequest = async (ctx) => {
     const { user } = ctx.request;
     const { username, friendname } = ctx.params;
 
+    console.log("deleteSentFriendRequest");
+    console.log(username);
+    console.log(friendname);
+
     // 권한 검증
     if (!user) {
         ctx.status = 403; // Forbidden
@@ -783,6 +787,8 @@ exports.deleteSentFriendRequest = async (ctx) => {
         ctx.throw(500, e);
         return;
     }
+
+    console.log(friendAccount._id);
 
     // 친구 추가 요청 제거
     try {
@@ -835,6 +841,10 @@ exports.deleteReceivedFriendRequest = async (ctx) => {
     const { user } = ctx.request;
     const { username, friendname } = ctx.params;
 
+    console.log("deleteReceivedFriendRequest");
+    console.log(username);
+    console.log(friendname);
+
     // 권한 검증
     if (!user) {
         ctx.status = 403; // Forbidden
@@ -849,6 +859,8 @@ exports.deleteReceivedFriendRequest = async (ctx) => {
         ctx.throw(500, e);
         return;
     }
+
+    console.log(friendAccount._id);
 
     // 친구 추가 요청 제거
     try {
