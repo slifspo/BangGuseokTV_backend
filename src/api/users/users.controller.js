@@ -683,22 +683,22 @@ exports.getSentFriendRequests = async (ctx) => {
     ctx.body = result;
 }
 
-// 친구요청
-exports.sendFriendRequest = async (ctx) => {
+// 보낸 친구요청 추가
+exports.addSentFriendRequests = async (ctx) => {
     const { user } = ctx.request;
     const { username } = ctx.params;
     const { friendname } = ctx.request.body;
 
     // 권한 검증
-    if (!user || user.profile.username != username) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
 
-    // 유저의 account 얻기, populate
-    let populatedAccount = null;
+    // username의 account
+    let userAccount = null;
     try {
-        populatedAccount = await Accounts.findOne({ '_id': user._id })
+        userAccount = await Accounts.findOne({ 'profile.username': username })
             .populate('friendlist', 'profile')
             .populate('sentFriendRequests', 'profile');
     } catch (e) {
@@ -706,7 +706,7 @@ exports.sendFriendRequest = async (ctx) => {
         return;
     }
 
-    // 친구추가할 유저의 account 얻기
+    // friendname의 account
     let friendAccount = null;
     try {
         friendAccount = await Accounts.findOne({ 'profile.username': friendname });
@@ -716,14 +716,14 @@ exports.sendFriendRequest = async (ctx) => {
     }
 
     // 이미 친구추가가 되어있는지 체크
-    const friendlist = populatedAccount.friendlist.map(data => data.profile.username);
+    const friendlist = userAccount.friendlist.map(data => data.profile.username);
     if (friendlist.includes(friendAccount.profile.username)) {
         ctx.status = 406; // Not allowed
         return;
     }
 
     // 이미 친구요청을 보냈는지 체크
-    const sentFriendRequests = populatedAccount.sentFriendRequests.map(data => data.profile.username);
+    const sentFriendRequests = userAccount.sentFriendRequests.map(data => data.profile.username);
     if (sentFriendRequests.includes(friendAccount.profile.username)) {
         ctx.status = 406; // Not allowed
         return;
@@ -738,22 +738,6 @@ exports.sendFriendRequest = async (ctx) => {
             {
                 '$push': {
                     'sentFriendRequests': friendAccount._id
-                }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
-
-    // 친구 추가 요청 보내기(received)
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': friendname,
-            },
-            {
-                '$push': {
-                    'receivedFriendRequests': populatedAccount._id
                 }
             });
     } catch (e) {
@@ -828,6 +812,71 @@ exports.getReceivedFriendRequests = async (ctx) => {
     const result = populatedAccount.receivedFriendRequests.map(user => user.profile);
 
     ctx.body = result;
+}
+
+// 받은 친구요청 추가
+exports.addReceivedFriendRequests = async (ctx) => {
+    const { user } = ctx.request;
+    const { username } = ctx.params; // 친구추가 요청 받는유저
+    const { friendname } = ctx.request.body; // 친구추가 요청 보내는유저
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // username의 account
+    let userAccount = null;
+    try {
+        userAccount = await Accounts.findOne({ 'profile.username': username })
+            .populate('receivedFriendRequests', 'profile');
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // friendname의 account
+    let friendAccount = null;
+    try {
+        friendAccount = await Accounts.findOne({ 'profile.username': friendname })
+            .populate('friendlist', 'profile');
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    // 이미 친구추가가 되어있는지 체크
+    const friendlist = friendAccount.friendlist.map(data => data.profile.username);
+    if (friendlist.includes(userAccount.profile.username)) {
+        ctx.status = 406; // Not allowed
+        return;
+    }
+
+    // 이미 친구요청을 보냈는지 체크
+    const receivedFriendRequests = userAccount.receivedFriendRequests.map(data => data.profile.username);
+    if (receivedFriendRequests.includes(friendAccount.profile.username)) {
+        ctx.status = 406; // Not allowed
+        return;
+    }
+
+    // 친구 추가 요청 보내기(received)
+    try {
+        await Accounts.updateOne(
+            {
+                'profile.username': username,
+            },
+            {
+                '$push': {
+                    'receivedFriendRequests': friendAccount._id
+                }
+            });
+    } catch (e) {
+        ctx.throw(500, e);
+        return;
+    }
+
+    ctx.body = 204; // No Content
 }
 
 // 받은 친구요청 제거

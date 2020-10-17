@@ -23,10 +23,11 @@ users.post('/:username/friendlist', usersCtrl.addFriendlist); // 친구추가
 users.get('/:username/friendlist/:friendname', usersCtrl.getFriend); // 친구 조회
 
 users.get('/:username/sentFriendRequests', usersCtrl.getSentFriendRequests); // 보낸 친구요청 조회
-users.post('/:username/sentFriendRequests', usersCtrl.sendFriendRequest); // 친구요청
+users.post('/:username/sentFriendRequests', usersCtrl.addSentFriendRequests); // 보낸 친구요청 추가
 users.delete('/:username/sentFriendRequests/:friendname', usersCtrl.deleteSentFriendRequest); // 보낸 친구요청 제거
 
 users.get('/:username/receivedFriendRequests', usersCtrl.getReceivedFriendRequests); // 받은 친구요청 조회
+users.post('/:username/receivedFriendRequests', usersCtrl.addReceivedFriendRequests); // 받은 친구요청 추가
 users.delete('/:username/receivedFriendRequests/:friendname', usersCtrl.deleteReceivedFriendRequest); // 받은 친구요청 제거
 
 module.exports = users;
