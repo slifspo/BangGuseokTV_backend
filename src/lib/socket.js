@@ -28,9 +28,9 @@ const userConnected = async (connUsername, io, isConnected) => {
             const friendSocketId = loginUsername.get(username);
 
             if (isConnected)
-                io.to(friendSocketId).emit('userConnected', connUsername);
+                io.to(friendSocketId).emit('friendConnected', connUsername);
             else
-                io.to(friendSocketId).emit('userDisconnected', connUsername);
+                io.to(friendSocketId).emit('friendDisconnected', connUsername);
         }
     });
 
