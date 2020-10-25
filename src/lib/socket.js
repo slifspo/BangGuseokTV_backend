@@ -6,7 +6,7 @@ const { playState, startPlayerlist } = require('lib/playerlist');
 const loginUsername = new Map(); // key: username, value: socket.id
 const loginSocketId = new Map(); // key: socket.id, value: username
 
-// 친구목록에 있는 유저에게 disconnect 알리기
+// 친구목록에 있는 유저에게 connected/disconnected 알리기
 const userConnected = async (connUsername, io, isConnected) => {
     // 연결해제한 유저의 친구목록 불러옴
     let account = null;
