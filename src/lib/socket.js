@@ -94,24 +94,30 @@ module.exports.init = (io) => {
             })
         })
 
-        // 친구 요청
+        // 친구관련 요청시 요청받은유저에게 요청한유저의 profile 정보를 보냄
         socket.on('sendFriendRequest', async (data) => {
-            const { username, friendname } = data;
+            // username: 요청한유저, friendname: 요청받은유저
+            const { username, friendname, sort } = data;
 
             // 온라인일때
             if (loginUsername.has(friendname)) {
                 const friendSocketId = loginUsername.get(friendname);
 
-                // 연결해제한 유저의 친구목록 불러옴
+                // 요청한유저의 account 불러옴
                 let account = null;
                 try {
-                    account = await Accounts.findOne({ 'profile.username': friendname });
+                    account = await Accounts.findOne({ 'profile.username': username });
                 } catch (e) {
                     console.log(e);
                     return;
                 }
 
-                io.to(friendSocketId).emit('receiveFriendRequest', account.profile);
+                // 요청받은유저에게 요청한유저의 profile 정보 emit
+                if (sort === 'friendRequest') {
+                    io.to(friendSocketId).emit('receiveFriendRequest', account.profile);
+                } else if (sort === 'friendAccept') {
+                    io.to(friendSocketId).emit('receiveFriendAccept', account.profile);
+                }
             }
         })
     })
