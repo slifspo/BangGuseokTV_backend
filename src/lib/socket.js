@@ -95,7 +95,7 @@ module.exports.init = (io) => {
         })
 
         // 친구 요청
-        socket.on('sendFriendRequest', (data) => {
+        socket.on('sendFriendRequest', async (data) => {
             const { username, friendname } = data;
 
             // 온라인일때
