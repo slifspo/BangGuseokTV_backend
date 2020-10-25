@@ -7,11 +7,11 @@ const loginUsername = new Map(); // key: username, value: socket.id
 const loginSocketId = new Map(); // key: socket.id, value: username
 
 // 친구목록에 있는 유저에게 disconnect 알리기
-const noticeDisconnected = async (disconnUsername, io) => {
+const userConnected = async (connUsername, io, isConnected) => {
     // 연결해제한 유저의 친구목록 불러옴
     let account = null;
     try {
-        account = await Accounts.findOne({'profile.username': disconnUsername}).populate('friendlist', 'profile');
+        account = await Accounts.findOne({'profile.username': connUsername}).populate('friendlist', 'profile');
     } catch (e) {
         console.log(e);
         return;
@@ -26,8 +26,11 @@ const noticeDisconnected = async (disconnUsername, io) => {
     friendlist.forEach(username => {
         if (loginUsername.has(username)) {
             const friendSocketId = loginUsername.get(username);
-            io.to(friendSocketId).emit('userDisconnected', disconnUsername);
-            console.log("from: " + disconnUsername + " to: " + username);
+
+            if (isConnected)
+                io.to(friendSocketId).emit('userConnected', connUsername);
+            else
+                io.to(friendSocketId).emit('userDisconnected', connUsername);
         }
     });
 
@@ -42,23 +45,21 @@ module.exports.loginSocketId = loginSocketId;
 module.exports.init = (io) => {
     // 소켓 연결
     io.on('connection', (socket) => {
-        //console.log('클라이언트가 연결됨: ' + socket.id);
 
         // 초기화
         socket.on('init', (data) => {
-            //console.log('init: ' + socket.id);
-
             const { username } = data;
 
             // 유저정보 업데이트
             loginUsername.set(username, socket.id);
             loginSocketId.set(socket.id, username);
+
+            // 친구목록에 있는 유저에게 connected 알리기
+            await userConnected(username, io, true);
         })
 
         // 방 참가
         socket.on('joinRoom', (data) => {
-            //console.log('joinRoom: ' + socket.id);
-
             const { hostname, username } = data;
             
             socket.join(hostname);
@@ -72,8 +73,6 @@ module.exports.init = (io) => {
 
         // 방 나가기
         socket.on('leaveRoom', (data) => {
-            //console.log('leaveRoom: ' + socket.id);
-
             const { hostname, username } = data;
 
             socket.leave(hostname);
@@ -102,15 +101,14 @@ module.exports.init = (io) => {
 
     // 소켓 연결해제
     io.on('disconnect', async (ctx, data) => {
-        //console.log('클라이언트 연결해제: ' + ctx.socket.id);
 
         // 로그인하지 않은 유저라면 여기서 멈춤
         if (!loginSocketId.has(ctx.socket.id)) return;
 
         const disconnUsername = loginSocketId.get(ctx.socket.id);
 
-        // 친구목록에 있는 유저에게 disconnect 알리기
-        await noticeDisconnected(disconnUsername, io);
+        // 친구목록에 있는 유저에게 disconnected 알리기
+        await userConnected(disconnUsername, io, false);
 
         // 유저 제거
         loginUsername.delete(disconnUsername);
