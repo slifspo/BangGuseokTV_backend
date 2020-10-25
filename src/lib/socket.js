@@ -11,7 +11,7 @@ const userConnected = async (connUsername, io, isConnected) => {
     // 연결해제한 유저의 친구목록 불러옴
     let account = null;
     try {
-        account = await Accounts.findOne({'profile.username': connUsername}).populate('friendlist', 'profile');
+        account = await Accounts.findOne({ 'profile.username': connUsername }).populate('friendlist', 'profile');
     } catch (e) {
         console.log(e);
         return;
@@ -22,15 +22,11 @@ const userConnected = async (connUsername, io, isConnected) => {
         user.profile.username
     ));
 
-    // 친구목록의 유저들에게 메세지 보내기
+    // 로그인한 친구목록의 유저들에게 메세지 보내기
     friendlist.forEach(username => {
         if (loginUsername.has(username)) {
             const friendSocketId = loginUsername.get(username);
-
-            if (isConnected)
-                io.to(friendSocketId).emit('friendConnected', connUsername);
-            else
-                io.to(friendSocketId).emit('friendDisconnected', connUsername);
+            io.to(friendSocketId).emit('friendConnected', { connUsername, isConnected });
         }
     });
 
@@ -61,7 +57,7 @@ module.exports.init = (io) => {
         // 방 참가
         socket.on('joinRoom', (data) => {
             const { hostname, username } = data;
-            
+
             socket.join(hostname);
             io.to(hostname).emit('receiveChat', {
                 type: 'alert',
@@ -96,6 +92,27 @@ module.exports.init = (io) => {
                     message
                 }
             })
+        })
+
+        // 친구 요청
+        socket.on('sendFriendRequest', (data) => {
+            const { username, friendname } = data;
+
+            // 온라인일때
+            if (loginUsername.has(friendname)) {
+                const friendSocketId = loginUsername.get(friendname);
+
+                // 연결해제한 유저의 친구목록 불러옴
+                let account = null;
+                try {
+                    account = await Accounts.findOne({ 'profile.username': friendname });
+                } catch (e) {
+                    console.log(e);
+                    return;
+                }
+
+                io.to(friendSocketId).emit('receiveFriendRequest', account.profile);
+            }
         })
     })
 
