@@ -116,7 +116,10 @@ module.exports.init = (io) => {
                 if (sort === 'friendRequest') {
                     io.to(friendSocketId).emit('receiveFriendRequest', account.profile);
                 } else if (sort === 'friendAccept') {
-                    io.to(friendSocketId).emit('receiveFriendAccept', account.profile);
+                    io.to(friendSocketId).emit('receiveFriendAccept', {
+                        ...account.profile,
+                        isOnline: loginUsername.has(username) // 온라인여부
+                    });
                 }
             }
         })
