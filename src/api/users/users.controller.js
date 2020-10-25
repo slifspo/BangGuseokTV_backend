@@ -663,7 +663,8 @@ exports.deleteFriend = async (ctx) => {
     const { username, friendname } = ctx.params;
 
     // 권한 검증
-    if (!user || user.profile.username != username) {
+    if (!user ||
+        (user.profile.username != username && user.profile.username != friendname)) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -794,7 +795,8 @@ exports.deleteSentFriendRequest = async (ctx) => {
     const { username, friendname } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user || 
+        (user.profile.username != username && user.profile.username!= friendname)) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -925,7 +927,8 @@ exports.deleteReceivedFriendRequest = async (ctx) => {
     const { username, friendname } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user ||
+        (user.profile.username != username && user.profile.username!= friendname)) {
         ctx.status = 403; // Forbidden
         return;
     }
