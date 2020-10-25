@@ -55,7 +55,7 @@ module.exports.init = (io) => {
             loginSocketId.set(socket.id, username);
 
             // 친구목록에 있는 유저에게 connected 알리기
-            await userConnected(username, io, true);
+            userConnected(username, io, true);
         })
 
         // 방 참가
