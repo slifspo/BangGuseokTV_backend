@@ -114,14 +114,17 @@ module.exports.init = (io) => {
 
                 // Receiver에게 Sender의 profile 정보 emit
                 if (sort === 'friendRequest') {
-                    // 친구 요청
+                    // 친구요청
                     io.to(friendSocketId).emit('receiveFriendRequest', account.profile);
                 } else if (sort === 'friendAccept') {
-                    // 친구 수락
+                    // 친구요청 수락
                     io.to(friendSocketId).emit('receiveFriendAccept', {
                         ...account.profile,
                         isOnline: loginUsername.has(username) // 온라인여부
                     });
+                } else if (sort === 'friendReject') {
+                    // 친구요청 거절
+                    io.to(friendSocketId).emit('receiveFriendReject', account.profile);
                 }
             }
         })
