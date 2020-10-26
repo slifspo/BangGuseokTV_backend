@@ -125,6 +125,9 @@ module.exports.init = (io) => {
                 } else if (sort === 'friendReject') {
                     // 친구요청 거절
                     io.to(friendSocketId).emit('receiveFriendReject', account.profile);
+                } else if (sort === 'friendDelete') {
+                    // 친구삭제
+                    io.to(friendSocketId).emit('receiveFriendDelete', account.profile);
                 }
             }
         })
