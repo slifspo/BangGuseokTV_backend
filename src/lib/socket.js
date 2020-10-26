@@ -94,16 +94,16 @@ module.exports.init = (io) => {
             })
         })
 
-        // 친구관련 요청시 요청받은유저에게 요청한유저의 profile 정보를 보냄
-        socket.on('sendFriendRequest', async (data) => {
-            // username: 요청한유저, friendname: 요청받은유저
+        // 친구관련 통신시 Receiver에게 Sender의 profile 정보를 보냄
+        socket.on('sendProfile', async (data) => {
+            // username: Sender, friendname: Receiver
             const { username, friendname, sort } = data;
 
             // 온라인일때
             if (loginUsername.has(friendname)) {
                 const friendSocketId = loginUsername.get(friendname);
 
-                // 요청한유저의 account 불러옴
+                // Sender의 account 불러옴
                 let account = null;
                 try {
                     account = await Accounts.findOne({ 'profile.username': username });
@@ -112,10 +112,12 @@ module.exports.init = (io) => {
                     return;
                 }
 
-                // 요청받은유저에게 요청한유저의 profile 정보 emit
+                // Receiver에게 Sender의 profile 정보 emit
                 if (sort === 'friendRequest') {
+                    // 친구 요청
                     io.to(friendSocketId).emit('receiveFriendRequest', account.profile);
                 } else if (sort === 'friendAccept') {
+                    // 친구 수락
                     io.to(friendSocketId).emit('receiveFriendAccept', {
                         ...account.profile,
                         isOnline: loginUsername.has(username) // 온라인여부
