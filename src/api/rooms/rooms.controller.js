@@ -31,6 +31,48 @@ exports.getRooms = async (ctx) => {
     ctx.body = rooms;
 };
 
+// 커서 다음방들 조회 12개씩
+exports.getNextRooms = async (ctx) => {
+    const { user } = ctx.request;
+    const { endCursor } = ctx.params;
+
+    // 권한 검증
+    if (!user) {
+        ctx.status = 403; // Forbidden
+        return;
+    }
+
+    // 방 조회
+    let rooms = null;
+    try {
+        rooms = await Rooms.getRooms();
+    } catch (e) {
+        ctx.throw(500, e);
+    }
+
+    if (rooms === null) {
+        ctx.status = 204 // No contents
+        return;
+    }
+
+    let result = [];
+
+    const start = endCursor + 1;
+    if (start < rooms.length) { // rooms 개수보다 적다면
+        const end = start + 12;
+        
+        if (end < rooms.length) {
+            result = rooms.slice(start, end);
+        } else {
+            result = rooms.slice(start);
+        }
+    }
+
+    console.log(result);
+
+    ctx.body = result;
+};
+
 // 방 이미지 DB에 업로드
 exports.updateThumbnail = async (ctx) => {
     const { user } = ctx.request;
