@@ -55,6 +55,7 @@ exports.getNextRooms = async (ctx) => {
         return;
     }
 
+    console.log(rooms);
     let result = [];
 
     const start = endCursor + 1;
