@@ -5,7 +5,7 @@ const Accounts = require('models/account');
 const fs = require('fs');
 const { playState, getTimeLeft, startPlayerlist } = require('lib/playerlist');
 
-// 방 목록 조회, 한번에 최대 12개씩
+// 방 목록 조회
 exports.getRooms = async (ctx) => {
     const { user } = ctx.request;
 
