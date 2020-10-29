@@ -43,12 +43,13 @@ exports.getNextRooms = async (ctx) => {
     }
 
     // 방 조회
-    let rooms = null;
+    /*let rooms = null;
     try {
         rooms = await Rooms.getRooms();
     } catch (e) {
         ctx.throw(500, e);
-    }
+    }*/
+    const rooms = await Rooms.getRooms();
 
     if (rooms === null) {
         ctx.status = 200;
