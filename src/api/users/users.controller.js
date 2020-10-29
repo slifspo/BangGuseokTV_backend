@@ -293,7 +293,7 @@ exports.addToPlaylist = async (ctx) => {
         return;
     }
 
-    ctx.status = 204; // No Content
+    ctx.status = 200;
 }
 
 // 재생목록에 항목 제거
@@ -328,7 +328,7 @@ exports.removeFromPlaylist = async (ctx) => {
         return;
     }
 
-    ctx.status = 204; // No Content
+    ctx.status = 200;
 }
 
 // 재생목록 가져오기
@@ -427,7 +427,7 @@ exports.addPlaylist = async (ctx) => {
         return;
     }
 
-    ctx.status = 204; // No Content
+    ctx.status = 200;
 }
 
 // 재생목록에 항목 제거
@@ -462,7 +462,7 @@ exports.removePlaylist = async (ctx) => {
         return;
     }
 
-    ctx.status = 204; // No Content
+    ctx.status = 200;
 }
 
 // 선택된 재생목록 설정
@@ -627,7 +627,7 @@ exports.addFriendlist = async (ctx) => {
         }
     }
 
-    ctx.body = 204; // No Content
+    ctx.status = 200;
 }
 
 // 친구 조회
@@ -695,7 +695,7 @@ exports.deleteFriend = async (ctx) => {
         return;
     }
 
-    ctx.body = 200; // OK
+    ctx.status = 200; // OK
 }
 
 // 보낸 친구요청 조회
@@ -786,7 +786,7 @@ exports.addSentFriendRequests = async (ctx) => {
         return;
     }
 
-    ctx.body = 204; // No Content
+    ctx.status = 200;
 }
 
 // 보낸 친구요청 제거
@@ -827,7 +827,7 @@ exports.deleteSentFriendRequest = async (ctx) => {
         return;
     }
 
-    ctx.body = 204; // No Content
+    ctx.status = 200;
 }
 
 // 받은 친구요청 조회
@@ -918,7 +918,7 @@ exports.addReceivedFriendRequests = async (ctx) => {
         return;
     }
 
-    ctx.body = 204; // No Content
+    ctx.status = 200;
 }
 
 // 받은 친구요청 제거
@@ -958,5 +958,5 @@ exports.deleteReceivedFriendRequest = async (ctx) => {
         return;
     }
 
-    ctx.body = 204; // No Content
+    ctx.status = 200;
 }

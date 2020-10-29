@@ -24,7 +24,7 @@ exports.getRooms = async (ctx) => {
     }
 
     if (rooms === null) {
-        ctx.status = 204 // No contents
+        ctx.status = 200;
         return;
     }
 
@@ -51,7 +51,7 @@ exports.getNextRooms = async (ctx) => {
     }
 
     if (rooms === null) {
-        ctx.status = 204 // No contents
+        ctx.status = 200;
         return;
     }
 
@@ -112,7 +112,7 @@ exports.updateThumbnail = async (ctx) => {
         return;
     }
 
-    ctx.status = 204; // No contents
+    ctx.status = 200;
 };
 
 // 방 이미지 검색
@@ -175,7 +175,7 @@ exports.updateProfile = async (ctx) => {
         return;
     }
 
-    ctx.status = 204; // No contents
+    ctx.status = 200;
 };
 
 // playerlist 추가
@@ -236,7 +236,7 @@ exports.joinPlayerlist = async (ctx) => {
     if (playState[hostname][0] !== true) // 해당 방의 playerlist 가 실행중이 아닐 때 playerlist start
         startPlayerlist(ctx.io, hostname); // playerlist 시작
 
-    ctx.status = 204; // No contents
+    ctx.status = 200;
 };
 
 // playerlist 제거
@@ -297,7 +297,7 @@ exports.leavePlayerlist = async (ctx) => {
         }
     }
 
-    ctx.status = 204; // No contents
+    ctx.status = 200;
 };
 
 // playState 얻기

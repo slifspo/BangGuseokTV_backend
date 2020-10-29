@@ -76,7 +76,7 @@ exports.logout = (ctx) => {
         sameSite: 'none',
         secure: true
     });
-    ctx.status = 204;
+    ctx.status = 200;
 };
 
 // 현재 로그인된 유저의 정보를 알려줌, user: { _id, profile }
@@ -143,7 +143,7 @@ exports.emailVerify = async (ctx) => {
         sameSite: 'none',
         secure: true
     });
-    ctx.status = 204; // No Content
+    ctx.status = 200;
 }
 
 // 인증 메일 전송
@@ -172,7 +172,7 @@ exports.emaliSend = async (ctx) => {
         ctx.throw(500, e);
     }
 
-    ctx.status = 204; // No Content
+    ctx.status = 200;
 }
 
 // 페이스북 로그인
