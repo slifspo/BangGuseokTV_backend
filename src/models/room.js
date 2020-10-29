@@ -57,7 +57,6 @@ Room.statics.getRooms = function () {
     return this.find()
         .populate('host_id')
         .sort('-favoriteCount')
-        .limit(12)
         .select('profile favoriteCount host_id');
 };
 
