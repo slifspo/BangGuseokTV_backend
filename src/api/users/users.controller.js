@@ -19,13 +19,7 @@ exports.localRegister = async (ctx) => {
     }
 
     // 아이디 / 이메일 중복 체크
-    let existing = null;
-    try {
-        existing = await Accounts.findByEmailOrUsername(ctx.request.body);
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const existing = await Accounts.findByEmailOrUsername(ctx.request.body);
 
     if (existing) {
         // 중복되는 아이디/이메일이 있을 경우
@@ -38,68 +32,31 @@ exports.localRegister = async (ctx) => {
     }
 
     // 계정 생성
-    let account = null;
-    try {
-        account = await Accounts.localRegister(ctx.request.body);
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const account = await Accounts.localRegister(ctx.request.body);
 
     // 방 생성
-    let room = null;
-    try {
-        room = await Rooms.createRoom(account._id);
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const room = await Rooms.createRoom(account._id);
 
     // 방의 hostname 변경
-    try { // 일치하면 profile.verified 를 true 로 업데이트
-        await Rooms.updateOne(
-            {
-                'host_id': account._id
-            },
-            {
-                '$set': {
-                    'hostname': ctx.request.body.username
-                }
+    await Rooms.updateOne(
+        {
+            'host_id': account._id
+        },
+        {
+            '$set': {
+                'hostname': ctx.request.body.username
             }
-        );
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+        }
+    );
 
     // 계정의 room_id 필드 업데이트
-    try {
-        await account.update({ 'room_id': room._id });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await account.update({ 'room_id': room._id });
 
     // 인증 메일 전송
-    let mail = null;
-    try {
-        mail = await account.sendMail();
-    } catch (e) {
-        ctx.throw(500, e);
-        console.log('이메일 전송 실패');
-        console.log(e);
-    }
-
-    console.log('이메일 전송 실행 후')
+    await account.sendMail();
 
     // 토큰 생성
-    let token = null;
-    try {
-        token = await account.generateToken();
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const token = await account.generateToken();
 
     ctx.cookies.set('access_token', token, {
         httpOnly: true,
@@ -121,13 +78,7 @@ exports.updateUsername = async (ctx) => {
     }
 
     // 유저이름이 null일때만 허용
-    let account = null;
-    try {
-        account = await Accounts.findById(user._id);
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const account = await Accounts.findById(user._id);
     if (account.profile.username !== null) {
         ctx.status = 406; // Not allowed
         return;
@@ -148,13 +99,7 @@ exports.updateUsername = async (ctx) => {
     const { username } = ctx.request.body;
 
     // 중복 체크
-    let existing = null;
-    try {
-        existing = await Accounts.findByUsername(username);
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const existing = await Accounts.findByUsername(username);
 
     if (existing) {
         // 중복되는 유저이름이 있을 경우
@@ -167,46 +112,25 @@ exports.updateUsername = async (ctx) => {
     }
 
     // 유저이름 변경
-    try { // 일치하면 profile.verified 를 true 로 업데이트
-        await account.update({ 'profile.username': username });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await account.update({ 'profile.username': username });
 
     // 업데이트된 account 가져옴
-    try {
-        account = await Accounts.findById(user._id);
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const updatedAccount = await Accounts.findById(user._id);
 
     // 방의 hostname 변경
-    try { // 일치하면 profile.verified 를 true 로 업데이트
-        await Rooms.updateOne(
-            {
-                '_id': account.room_id
-            },
-            {
-                '$set': {
-                    'hostname': username
-                }
+    await Rooms.updateOne(
+        {
+            '_id': updatedAccount.room_id
+        },
+        {
+            '$set': {
+                'hostname': username
             }
-        );
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+        }
+    );
 
     // 바뀐 profile의 토큰을 다시 생성
-    let token = null;
-    try {
-        token = await account.generateToken();
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const token = await updatedAccount.generateToken();
 
     ctx.cookies.set('access_token', token, {
         httpOnly: true,
@@ -214,7 +138,7 @@ exports.updateUsername = async (ctx) => {
         sameSite: 'none',
         secure: true
     });
-    ctx.body = account.profile.username; // 유저이름으로 응답.
+    ctx.body = updatedAccount.profile.username; // 유저이름으로 응답.
 }
 
 // 아바타 업데이트
@@ -230,31 +154,14 @@ exports.updateAvatar = async (ctx) => {
     }
 
     // 유저 account 찾기
-    let account = null;
-    try {
-        account = await Accounts.findByUsername(username);
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const account = await Accounts.findByUsername(username);
 
     // 아바타 변경
-    try {
-        await account.update({ 'profile.avatar': avatar });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await account.update({ 'profile.avatar': avatar });
 
     // 바뀐 profile의 토큰을 다시 생성
-    let token = null;
-    try {
-        account = await Accounts.findById(user._id);; // 업데이트된 document 가져옴
-        token = await account.generateToken();
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const updatedAccount = await Accounts.findById(user._id);; // 업데이트된 document 가져옴
+    const token = await updatedAccount.generateToken();
 
     ctx.cookies.set('access_token', token, {
         httpOnly: true,
@@ -262,7 +169,7 @@ exports.updateAvatar = async (ctx) => {
         sameSite: 'none',
         secure: true
     });
-    ctx.body = account.profile.avatar;
+    ctx.body = updatedAccount.profile.avatar;
 }
 
 // 재생목록에 항목 추가
@@ -278,20 +185,15 @@ exports.addToPlaylist = async (ctx) => {
     }
 
     // 항목 추가
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$push': {
-                    ['playlists.' + playlistIndex + '.videos']: videoInfo
-                }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$push': {
+                ['playlists.' + playlistIndex + '.videos']: videoInfo
+            }
+        });
 
     ctx.status = 200;
 }
@@ -308,25 +210,22 @@ exports.removeFromPlaylist = async (ctx) => {
     }
 
     // 항목 제거
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$unset': { ['playlists.' + playlistIndex + '.videos.' + videoIndex]: 1 } // 배열의 element 를 null 로 만듬
-            });
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$pull': { ['playlists.' + playlistIndex + '.videos']: null } // null 인 element 를 없앰
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$unset': { ['playlists.' + playlistIndex + '.videos.' + videoIndex]: 1 } // 배열의 element 를 null 로 만듬
+        }
+    );
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$pull': { ['playlists.' + playlistIndex + '.videos']: null } // null 인 element 를 없앰
+        }
+    );
 
     ctx.status = 200;
 }
@@ -343,13 +242,7 @@ exports.getPlaylists = async (ctx) => {
     }
 
     // 유저 account 찾기
-    let account = null;
-    try {
-        account = await Accounts.findById(user._id);
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const account = await Accounts.findById(user._id);
 
     ctx.body = account.playlists;
 }
@@ -374,24 +267,18 @@ exports.getPlaylistVideos = async (ctx) => {
     }
 
     // 유저 playlist 찾기
-    let result = null;
-    try {
-        result = await Accounts.aggregate([
-            {
-                '$match': {
-                    'profile.username': username,
-                }
-            },
-            {
-                '$project': {
-                    'playlist': { '$arrayElemAt': ['$playlists', parseInt(playlistIndex)] }
-                }
+    const result = await Accounts.aggregate([
+        {
+            '$match': {
+                'profile.username': username,
             }
-        ])
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+        },
+        {
+            '$project': {
+                'playlist': { '$arrayElemAt': ['$playlists', parseInt(playlistIndex)] }
+            }
+        }
+    ])
 
     ctx.body = result[0].playlist;
 }
@@ -409,23 +296,19 @@ exports.addPlaylist = async (ctx) => {
     }
 
     // 항목 추가
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$push': {
-                    'playlists': {
-                        'name': playlistName,
-                        'videos': []
-                    }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$push': {
+                'playlists': {
+                    'name': playlistName,
+                    'videos': []
                 }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+            }
+        }
+    );
 
     ctx.status = 200;
 }
@@ -442,25 +325,22 @@ exports.removePlaylist = async (ctx) => {
     }
 
     // 항목 제거
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$unset': { ['playlists.' + playlistIndex]: 1 } // 배열의 element 를 null 로 만듬
-            });
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$pull': { 'playlists': null } // null 인 element 를 없앰
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$unset': { ['playlists.' + playlistIndex]: 1 } // 배열의 element 를 null 로 만듬
+        }
+    );
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$pull': { 'playlists': null } // null 인 element 를 없앰
+        }
+    );
 
     ctx.status = 200;
 }
@@ -478,21 +358,16 @@ exports.updateSelectedPlaylist = async (ctx) => {
     }
 
     // selectedPlaylist 변경
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username
-            },
-            {
-                '$set': {
-                    'selectedPlaylist': selectedPlaylist
-                }
+    await Accounts.updateOne(
+        {
+            'profile.username': username
+        },
+        {
+            '$set': {
+                'selectedPlaylist': selectedPlaylist
             }
-        );
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+        }
+    );
 
     ctx.body = { selectedPlaylist: selectedPlaylist }
 }
@@ -509,25 +384,12 @@ exports.searchUsername = async (ctx) => {
     }
 
     // 유저의 account 얻기, populate
-    let populatedAccount = null;
-    try {
-        populatedAccount = await Accounts.findOne({ '_id': user._id })
-            .populate('friendlist', 'profile')
-            .populate('sentFriendRequests', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const populatedAccount = await Accounts.findOne({ '_id': user._id })
+        .populate('friendlist', 'profile')
+        .populate('sentFriendRequests', 'profile');
 
-    // 키워드에 해당하는 유저이름 모두 검색
-    let detectedUsers = null;
-    try {
-        // like keyword 이고 대소문자 구분없이 이름검색 
-        detectedUsers = await Accounts.find({ 'profile.username': { $regex: '.*' + keyword + '.*', $options: 'i' } });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    // 키워드에 해당하는 유저이름 모두 검색, like keyword 이고 대소문자 구분없이 이름검색 
+    const detectedUsers = await Accounts.find({ 'profile.username': { $regex: '.*' + keyword + '.*', $options: 'i' } });
 
     // 자기자신은 제외
     const filteredUser = detectedUsers.filter(user => user.profile.username !== populatedAccount.profile.username);
@@ -558,13 +420,7 @@ exports.getFriendlist = async (ctx) => {
     }
 
     // 유저의 account 얻기, populate
-    let populatedAccount = null;
-    try {
-        populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('friendlist', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('friendlist', 'profile');
 
     // 친구목록에 온라인/오프라인 여부 표시
     const { loginUsername } = require('lib/socket');
@@ -589,43 +445,27 @@ exports.addFriendlist = async (ctx) => {
     }
 
     // 유저의 account 얻기
-    let populatedAccount = null;
-    try {
-        populatedAccount = await Accounts.findOne({ 'profile.username': username })
-            .populate('friendlist', 'profile')
-            .populate('sentFriendRequests', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const populatedAccount = await Accounts.findOne({ 'profile.username': username })
+        .populate('friendlist', 'profile')
+        .populate('sentFriendRequests', 'profile');
 
     // 친구추가할 유저의 account 얻기
-    let friendAccount = null;
-    try {
-        friendAccount = await Accounts.findOne({ 'profile.username': friendname })
-            .populate('receivedFriendRequests', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const friendAccount = await Accounts.findOne({ 'profile.username': friendname })
+        .populate('receivedFriendRequests', 'profile');
 
     // 친구추가가 되어있는지 체크 후 친구추가
     const friendlist = populatedAccount.friendlist.map(data => data.profile.username);
     if (!friendlist.includes(friendAccount.profile.username)) {
-        try {
-            await Accounts.updateOne(
-                {
-                    'profile.username': username,
-                },
-                {
-                    '$push': {
-                        'friendlist': friendAccount._id
-                    }
-                });
-        } catch (e) {
-            ctx.throw(500, e);
-            return;
-        }
+        await Accounts.updateOne(
+            {
+                'profile.username': username,
+            },
+            {
+                '$push': {
+                    'friendlist': friendAccount._id
+                }
+            }
+        );
     }
 
     ctx.status = 200;
@@ -643,13 +483,7 @@ exports.getFriend = async (ctx) => {
     }
 
     // 유저의 account 얻기
-    let populatedAccount = null;
-    try {
-        populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('friendlist', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('friendlist', 'profile');
 
     // 친구목록에서 friendname인 프로필 찾기
     const foundUser = populatedAccount.friendlist.find(user => user.profile.username === friendname);
@@ -671,30 +505,19 @@ exports.deleteFriend = async (ctx) => {
     }
 
     // friendname의 account 얻기
-    let friendAccount = null;
-    try {
-        friendAccount = await Accounts.findOne({ 'profile.username': friendname });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const friendAccount = await Accounts.findOne({ 'profile.username': friendname });
 
     // 친구 제거
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$pull': {
-                    'friendlist': friendAccount._id
-                }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$pull': {
+                'friendlist': friendAccount._id
             }
-        );
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+        }
+    );
 
     ctx.status = 200; // OK
 }
@@ -711,13 +534,7 @@ exports.getSentFriendRequests = async (ctx) => {
     }
 
     // 유저의 account 얻기, populate
-    let populatedAccount = null;
-    try {
-        populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('sentFriendRequests', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('sentFriendRequests', 'profile');
 
     // profile 만 추출
     const result = populatedAccount.sentFriendRequests.map(user => user.profile);
@@ -738,24 +555,12 @@ exports.addSentFriendRequests = async (ctx) => {
     }
 
     // username의 account
-    let userAccount = null;
-    try {
-        userAccount = await Accounts.findOne({ 'profile.username': username })
-            .populate('friendlist', 'profile')
-            .populate('sentFriendRequests', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const userAccount = await Accounts.findOne({ 'profile.username': username })
+        .populate('friendlist', 'profile')
+        .populate('sentFriendRequests', 'profile');
 
     // friendname의 account
-    let friendAccount = null;
-    try {
-        friendAccount = await Accounts.findOne({ 'profile.username': friendname });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const friendAccount = await Accounts.findOne({ 'profile.username': friendname });
 
     // 이미 친구추가가 되어있는지 체크
     const friendlist = userAccount.friendlist.map(data => data.profile.username);
@@ -772,20 +577,16 @@ exports.addSentFriendRequests = async (ctx) => {
     }
 
     // 친구 추가 요청 보내기(sent)
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$push': {
-                    'sentFriendRequests': friendAccount._id
-                }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$push': {
+                'sentFriendRequests': friendAccount._id
+            }
+        }
+    );
 
     ctx.status = 200;
 }
@@ -796,37 +597,26 @@ exports.deleteSentFriendRequest = async (ctx) => {
     const { username, friendname } = ctx.params;
 
     // 권한 검증
-    if (!user || 
-        (user.profile.username != username && user.profile.username!= friendname)) {
+    if (!user ||
+        (user.profile.username != username && user.profile.username != friendname)) {
         ctx.status = 403; // Forbidden
         return;
     }
 
     // friendname 유저의 account 얻기
-    let friendAccount = null;
-    try {
-        friendAccount = await Accounts.findOne({ 'profile.username': friendname });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const friendAccount = await Accounts.findOne({ 'profile.username': friendname });
 
     // 친구 추가 요청 제거
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$pull': {
-                    'sentFriendRequests': friendAccount._id
-                }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$pull': {
+                'sentFriendRequests': friendAccount._id
             }
-        );
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+        }
+    );
 
     ctx.status = 200;
 }
@@ -843,13 +633,7 @@ exports.getReceivedFriendRequests = async (ctx) => {
     }
 
     // 유저의 account 얻기, populate
-    let populatedAccount = null;
-    try {
-        populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('receivedFriendRequests', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const populatedAccount = await Accounts.findOne({ 'profile.username': username }).populate('receivedFriendRequests', 'profile');
 
     // profile 만 추출
     const result = populatedAccount.receivedFriendRequests.map(user => user.profile);
@@ -871,24 +655,12 @@ exports.addReceivedFriendRequests = async (ctx) => {
     }
 
     // username의 account
-    let userAccount = null;
-    try {
-        userAccount = await Accounts.findOne({ 'profile.username': username })
-            .populate('receivedFriendRequests', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const userAccount = await Accounts.findOne({ 'profile.username': username })
+        .populate('receivedFriendRequests', 'profile');
 
     // friendname의 account
-    let friendAccount = null;
-    try {
-        friendAccount = await Accounts.findOne({ 'profile.username': friendname })
-            .populate('friendlist', 'profile');
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const friendAccount = await Accounts.findOne({ 'profile.username': friendname })
+        .populate('friendlist', 'profile');
 
     // 이미 친구추가가 되어있는지 체크
     const friendlist = friendAccount.friendlist.map(data => data.profile.username);
@@ -905,20 +677,16 @@ exports.addReceivedFriendRequests = async (ctx) => {
     }
 
     // 친구 추가 요청 보내기(received)
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$push': {
-                    'receivedFriendRequests': friendAccount._id
-                }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$push': {
+                'receivedFriendRequests': friendAccount._id
+            }
+        }
+    );
 
     ctx.status = 200;
 }
@@ -930,35 +698,25 @@ exports.deleteReceivedFriendRequest = async (ctx) => {
 
     // 권한 검증
     if (!user ||
-        (user.profile.username != username && user.profile.username!= friendname)) {
+        (user.profile.username != username && user.profile.username != friendname)) {
         ctx.status = 403; // Forbidden
         return;
     }
 
     // friendname 유저의 account 얻기
-    let friendAccount = null;
-    try {
-        friendAccount = await Accounts.findOne({ 'profile.username': friendname });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const friendAccount = await Accounts.findOne({ 'profile.username': friendname });
 
     // 친구 추가 요청 제거
-    try {
-        await Accounts.updateOne(
-            {
-                'profile.username': username,
-            },
-            {
-                '$pull': {
-                    'receivedFriendRequests': friendAccount._id
-                }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await Accounts.updateOne(
+        {
+            'profile.username': username,
+        },
+        {
+            '$pull': {
+                'receivedFriendRequests': friendAccount._id
+            }
+        }
+    );
 
     ctx.status = 200;
 }

@@ -22,15 +22,7 @@ const startPlayerlist = async (io, hostname) => {
     playState[hostname][0] = true;
 
     // playerlist 의 first player 찾기
-    let room = null;
-    try {
-        room = await Rooms.findOne({
-            'hostname': hostname
-        });
-    } catch (e) {
-        console.log(e);
-        return;
-    }
+    const room = await Rooms.findOne({ 'hostname': hostname });
     const firstPlayer = room.playerlist[0];
 
     // playerlist 에 아무도 없을 때
@@ -52,29 +44,17 @@ const startPlayerlist = async (io, hostname) => {
     playState[hostname][2] = firstPlayer.username;
 
     // firstPlayer를 배열에서 pop
-    try {
-        await Rooms.updateOne(
-            {
-                'hostname': hostname
-            },
-            {
-                '$pop': { playerlist: -1 }
-            }
-        );
-    } catch (e) {
-        console.log(e);
-        return;
-    }
+    await Rooms.updateOne(
+        {
+            'hostname': hostname
+        },
+        {
+            '$pop': { playerlist: -1 }
+        }
+    );
 
     // firstPlayer 에 해당하는 유저의 firstVideo 찾기
-    let account = null;
-    try {
-        account = await Accounts.findOne({
-            'profile.username': firstPlayer.username,
-        });
-    } catch (e) {
-        console.log(e);
-    }
+    const account = await Accounts.findOne({ 'profile.username': firstPlayer.username });
     const selectedPlaylist = account.selectedPlaylist;
     const firstVideo = account.playlists[selectedPlaylist].videos[0];
 
@@ -105,68 +85,47 @@ const startPlayerlist = async (io, hostname) => {
         })
 
         // http 요청
-        let res = null;
-        try {
-            res = await zenio.get(url);
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+        const res = await zenio.get(url);
 
         // 유튜브 video 의 재생시간 변환
         videoDuration = convertTime(res.items[0].contentDetails.duration);
 
         // firstVideo를 배열에서 pop
-        try {
-            await Accounts.updateOne(
-                {
-                    'profile.username': firstPlayer.username,
-                },
-                {
-                    '$pop': { ['playlists.' + selectedPlaylist + '.videos']: -1 }
-                }
-            );
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+        await Accounts.updateOne(
+            {
+                'profile.username': firstPlayer.username,
+            },
+            {
+                '$pop': { ['playlists.' + selectedPlaylist + '.videos']: -1 }
+            }
+        );
 
         // firstVideo를 배열 마지막에 add
-        try {
-            await Accounts.updateOne(
-                {
-                    'profile.username': firstPlayer.username,
-                },
-                {
-                    '$push': {
-                        ['playlists.' + selectedPlaylist + '.videos']: firstVideo
-                    }
+        await Accounts.updateOne(
+            {
+                'profile.username': firstPlayer.username,
+            },
+            {
+                '$push': {
+                    ['playlists.' + selectedPlaylist + '.videos']: firstVideo
                 }
-            )
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+            }
+        )
 
         // firstPlayer를 배열 마지막에 add
-        try {
-            await Rooms.updateOne(
-                {
-                    'hostname': hostname
-                },
-                {
-                    '$addToSet': {
-                        'playerlist': {
-                            'username': firstPlayer.username,
-                            'socketId': firstPlayer.socketId
-                        }
+        await Rooms.updateOne(
+            {
+                'hostname': hostname
+            },
+            {
+                '$addToSet': {
+                    'playerlist': {
+                        'username': firstPlayer.username,
+                        'socketId': firstPlayer.socketId
                     }
                 }
-            )
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+            }
+        )
 
         // playState를 emit
         io.to(hostname).emit('sendPlayState', {

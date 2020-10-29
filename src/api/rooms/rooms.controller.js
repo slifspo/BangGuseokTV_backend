@@ -16,12 +16,7 @@ exports.getRooms = async (ctx) => {
     }
 
     // 방 조회
-    let rooms = null;
-    try {
-        rooms = await Rooms.getRooms();
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    const rooms = await Rooms.getRooms();
 
     if (rooms === null) {
         ctx.status = 200;
@@ -43,12 +38,6 @@ exports.getNextRooms = async (ctx) => {
     }
 
     // 방 조회
-    /*let rooms = null;
-    try {
-        rooms = await Rooms.getRooms();
-    } catch (e) {
-        ctx.throw(500, e);
-    }*/
     const rooms = await Rooms.getRooms();
 
     if (rooms === null) {
@@ -92,31 +81,21 @@ exports.updateThumbnail = async (ctx) => {
     }
 
     // 해당 유저의 방 찾기
-    let room = null;
-    try {
-        room = await Rooms.findByUserId(user._id);
-    } catch {
-        ctx.throw(500, e);
-        return;
-    }
+    const room = await Rooms.findByUserId(user._id);
 
     // thumbnail 업데이트
     const imgData = fs.readFileSync(file.path);
     const contentType = file.type;
-    try {
-        await room.update({
-            'profile.thumbnail.data': imgData,
-            'profile.thumbnail.contentType': contentType
-        });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+
+    await room.update({
+        'profile.thumbnail.data': imgData,
+        'profile.thumbnail.contentType': contentType
+    });
 
     ctx.status = 200;
 };
 
-// 방 이미지 검색
+// 특정유저의 방 검색
 exports.getUserRoom = async (ctx) => {
     const { user } = ctx.request;
     const { username } = ctx.params;
@@ -134,13 +113,7 @@ exports.getUserRoom = async (ctx) => {
     }
 
     // 해당 유저의 방 찾기
-    let room = null;
-    try {
-        room = await Rooms.findByUserId(user._id);
-    } catch {
-        ctx.throw(500, e);
-        return;
-    }
+    const room = await Rooms.findByUserId(user._id);
 
     ctx.body = room
 };
@@ -157,24 +130,13 @@ exports.updateProfile = async (ctx) => {
     }
 
     // 해당 유저의 방 찾기
-    let room = null;
-    try {
-        room = await Rooms.findByUserId(user._id);
-    } catch {
-        ctx.throw(500, e);
-        return;
-    }
+    const room = await Rooms.findByUserId(user._id);
 
     // title, description 업데이트
-    try {
-        await room.update({
-            'profile.title': roomTitle,
-            'profile.description': roomExplain
-        });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    await room.update({
+        'profile.title': roomTitle,
+        'profile.description': roomExplain
+    });
 
     ctx.status = 200;
 };
@@ -191,15 +153,7 @@ exports.joinPlayerlist = async (ctx) => {
         return;
     }
 
-    let account = null
-    try {
-        account = await Accounts.findOne({
-            'profile.username': user.profile.username
-        })
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const account = await Accounts.findOne({'profile.username': user.profile.username})
 
     // 유저가 재생목록이 있는지, 재생목록에 비디오가 있는지 확인
     const { selectedPlaylist } = account;
@@ -213,23 +167,19 @@ exports.joinPlayerlist = async (ctx) => {
     }
 
     // playerlist 에 username 추가
-    try {
-        await Rooms.updateOne(
-            {
-                'hostname': hostname
-            },
-            {
-                '$addToSet': {
-                    'playerlist': {
-                        'username': user.profile.username,
-                        'socketId': socketId
-                    }
+    await Rooms.updateOne(
+        {
+            'hostname': hostname
+        },
+        {
+            '$addToSet': {
+                'playerlist': {
+                    'username': user.profile.username,
+                    'socketId': socketId
                 }
-            });
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+            }
+        }
+    );
 
     // playerlist 시작
     if (playState[hostname] === undefined) // 처음 실행 시
@@ -252,34 +202,22 @@ exports.leavePlayerlist = async (ctx) => {
     }
 
     // playerlist 에서 제거
-    try {
-        await Rooms.updateOne(
-            {
-                'hostname': hostname
-            },
-            {
-                '$pull': {
-                    'playerlist': {
-                        'username': user.profile.username
-                    }
+    await Rooms.updateOne(
+        {
+            'hostname': hostname
+        },
+        {
+            '$pull': {
+                'playerlist': {
+                    'username': user.profile.username
                 }
             }
-        );
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+        }
+    );
 
     // playerlist 에 한명이라도 있는지 확인
-    let room = null;
-    try {
-        room = await Rooms.findOne({
-            'hostname': hostname,
-        })
-    } catch (e) {
-        ctx.throw(500, e);
-        return;
-    }
+    const room = await Rooms.findOne({'hostname': hostname})
+
     if (room.playerlist[0] === undefined) { // playerlist 가 비어있으면
         if (playState[hostname] !== undefined) {
             clearTimeout(playState[hostname][1]); // 타이머 해제

@@ -20,13 +20,8 @@ exports.localLogin = async (ctx) => {
 
     const { email, password } = ctx.request.body;
 
-    let account = null;
-    try {
-        // 이메일로 계정 찾기
-        account = await Accounts.findByEmail(email);
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    // 이메일로 계정 찾기
+    const account = await Accounts.findByEmail(email);
 
     if (!account || !account.validatePassword(password)) {
         // 유저가 존재하지 않거나 || 비밀번호가 일치하지 않으면
@@ -35,12 +30,7 @@ exports.localLogin = async (ctx) => {
     }
 
     // 토큰 생성
-    let token = null;
-    try {
-        token = await account.generateToken();
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    const token = await account.generateToken();
 
     ctx.cookies.set('access_token', token, {
         httpOnly: true,
@@ -54,14 +44,9 @@ exports.localLogin = async (ctx) => {
 // 이메일 / 아이디 존재유무 확인
 exports.exists = async (ctx) => {
     const { key, value } = ctx.params;
-    let account = null;
 
-    try {
-        // key 에 따라 findByEmail 혹은 findByUsername 을 실행합니다.
-        account = await (key === 'email' ? Accounts.findByEmail(value) : Accounts.findByUsername(value));
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    // key 에 따라 findByEmail 혹은 findByUsername 을 실행합니다.
+    const account = await (key === 'email' ? Accounts.findByEmail(value) : Accounts.findByUsername(value));
 
     ctx.body = {
         exists: account !== null
@@ -108,13 +93,8 @@ exports.emailVerify = async (ctx) => {
 
     const { email, key } = ctx.request.body;
 
-    let account = null;
-    try {
-        // 이메일로 유저 인스턴스를 찾음
-        account = await Accounts.findByEmail(email);
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    // 이메일로 유저 인스턴스를 찾음
+    const account = await Accounts.findByEmail(email);
 
     // key 일치여부 확인
     if (account.email.key_for_verify != key) {
@@ -122,20 +102,14 @@ exports.emailVerify = async (ctx) => {
         return;
     }
 
-    try { // 일치하면 profile.verified 를 true 로 업데이트
-        await account.update({ 'profile.verified': true });
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    // 일치하면 profile.verified 를 true 로 업데이트
+    await account.update({ 'profile.verified': true });
+
+    // 업데이트된 document 가져옴
+    const updatedAccount = await Accounts.findByEmail(email);
 
     // 바뀐 profile의 토큰을 다시 생성
-    let token = null;
-    try {
-        account = await Accounts.findByEmail(email); // 업데이트된 document 가져옴
-        token = await account.generateToken();
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    const token = await updatedAccount.generateToken();
 
     ctx.cookies.set('access_token', token, {
         httpOnly: true,
@@ -157,20 +131,10 @@ exports.emaliSend = async (ctx) => {
     }
 
     // 유저 조회
-    let account = null;
-    try {
-        account = await Accounts.findByUsername(user.profile.username);
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    const account = await Accounts.findByUsername(user.profile.username);
 
     // 인증 메일 전송
-    let mail = null;
-    try {
-        mail = await account.sendMail();
-    } catch (e) {
-        ctx.throw(500, e);
-    }
+    await account.sendMail();
 
     ctx.status = 200;
 }
@@ -187,57 +151,24 @@ exports.fbLogin = (ctx) => {
 exports.fbLoginCb = (ctx) => {
     return passport.authenticate('facebook', async (err, profile, info) => {
         // 계정 조회
-        let account = null;
-        try {
-            account = await Accounts.findByEmail(profile.emails[0].value);
-        } catch (e) {
-            ctx.throw(500, e);
-            console.log("계정조회오류")
-            console.log(e)
-        }
+        let account = await Accounts.findByEmail(profile.emails[0].value);
 
         // 계정이 없다면
         if (!account) {
             // 계정 생성
-            try {
-                account = await Accounts.socialRegister(profile.emails[0].value);
-            } catch (e) {
-                ctx.throw(500, e);
-                console.log("계정생성오류")
-                console.log(e)
-            }
+            account = await Accounts.socialRegister(profile.emails[0].value);
         }
 
         // 방이 없을 시 방 생성
         if (account.room_id === undefined) {
-            let room = null;
-            try {
-                room = await Rooms.createRoom(account._id);
-            } catch (e) {
-                ctx.throw(500, e);
-                console.log("방생성오류")
-                console.log(e)
-            }
+            const room = await Rooms.createRoom(account._id);
 
             // 계정의 room_id 필드 업데이트
-            try {
-                await account.update({ 'room_id': room._id });
-            } catch (e) {
-                ctx.throw(500, e);
-                console.log("계정 room_id필드 업데이트 오류")
-                console.log(e)
-            }
+            await account.update({ 'room_id': room._id });
         }
 
         // 토큰 생성
-        let token = null;
-        try {
-            token = await account.generateToken();
-        } catch (e) {
-            ctx.throw(500, e);
-            console.log("토큰생성오류")
-            console.log(e)
-        }
+        const token = await account.generateToken();
 
         ctx.cookies.set('access_token', token, {
             httpOnly: true,
@@ -262,57 +193,24 @@ exports.ggLogin = (ctx) => {
 exports.ggLoginCb = (ctx) => {
     return passport.authenticate('google', async (err, profile, info) => {
         // 계정 조회
-        let account = null;
-        try {
-            account = await Accounts.findByEmail(profile.emails[0].value);
-        } catch (e) {
-            ctx.throw(500, e);
-            console.log("계정조회오류")
-            console.log(e)
-        }
+        let account = await Accounts.findByEmail(profile.emails[0].value);
 
         // 계정이 없다면
         if (!account) {
             // 계정 생성
-            try {
-                account = await Accounts.socialRegister(profile.emails[0].value);
-            } catch (e) {
-                ctx.throw(500, e);
-                console.log("계정생성오류")
-                console.log(e)
-            }
+            account = await Accounts.socialRegister(profile.emails[0].value);
         }
 
         // 방이 없을 시 방 생성
         if (account.room_id === undefined) {
-            let room = null;
-            try {
-                room = await Rooms.createRoom(account._id);
-            } catch (e) {
-                ctx.throw(500, e);
-                console.log("방생성오류")
-                console.log(e)
-            }
+            const room = await Rooms.createRoom(account._id);
 
             // 계정의 room_id 필드 업데이트
-            try {
-                await account.update({ 'room_id': room._id });
-            } catch (e) {
-                ctx.throw(500, e);
-                console.log("계정 room_id필드 업데이트 오류")
-                console.log(e)
-            }
+            await account.update({ 'room_id': room._id });
         }
 
         // 토큰 생성
-        let token = null;
-        try {
-            token = await account.generateToken();
-        } catch (e) {
-            ctx.throw(500, e);
-            console.log("토큰생성오류")
-            console.log(e)
-        }
+        const token = await account.generateToken();
 
         ctx.cookies.set('access_token', token, {
             httpOnly: true,

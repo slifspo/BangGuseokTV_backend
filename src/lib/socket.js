@@ -9,18 +9,10 @@ const loginSocketId = new Map(); // key: socket.id, value: username
 // 친구목록에 있는 유저에게 connected/disconnected 알리기
 const userConnected = async (connUsername, io, isConnected) => {
     // 연결해제한 유저의 친구목록 불러옴
-    let account = null;
-    try {
-        account = await Accounts.findOne({ 'profile.username': connUsername }).populate('friendlist', 'profile');
-    } catch (e) {
-        console.log(e);
-        return;
-    }
+    const account = await Accounts.findOne({ 'profile.username': connUsername }).populate('friendlist', 'profile');
 
     // 친구목록 추출
-    const friendlist = account.friendlist.map(user => (
-        user.profile.username
-    ));
+    const friendlist = account.friendlist.map(user => user.profile.username);
 
     // 로그인한 친구목록의 유저들에게 메세지 보내기
     friendlist.forEach(username => {
@@ -104,13 +96,7 @@ module.exports.init = (io) => {
                 const friendSocketId = loginUsername.get(friendname);
 
                 // Sender의 account 불러옴
-                let account = null;
-                try {
-                    account = await Accounts.findOne({ 'profile.username': username });
-                } catch (e) {
-                    console.log(e);
-                    return;
-                }
+                const account = await Accounts.findOne({ 'profile.username': username });
 
                 // Receiver에게 Sender의 profile 정보 emit
                 if (sort === 'friendRequest') {
@@ -153,70 +139,46 @@ module.exports.init = (io) => {
          * playerlist에서 나가게하기 
          */
         // socket id 가 일치하는 room 을 검색
-        let room = null;
-        try {
-            room = await Rooms.findOne({
-                'playerlist.socketId': ctx.socket.id
-            })
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+        const room = await Rooms.findOne({ 'playerlist.socketId': ctx.socket.id });
 
         if (room === null) return;
         const { hostname } = room;
 
         // socket id 와 일치하는 playerlist 의 username field 얻기
-        let result = null;
-        try {
-            result = await Rooms.find(
-                {
-                    'hostname': hostname,
-                    'playerlist': {
-                        '$elemMatch': { socketId: ctx.socket.id }
-                    }
-                },
-                {
-                    'playerlist.$.username': 1
+        const result = await Rooms.find(
+            {
+                'hostname': hostname,
+                'playerlist': {
+                    '$elemMatch': { socketId: ctx.socket.id }
                 }
-            )
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+            },
+            {
+                'playerlist.$.username': 1
+            }
+        )
 
         //console.log(result[0]);
         const { username } = result[0].playerlist[0];
 
         // playerlist 에서 제거
-        try {
-            await Rooms.updateOne(
-                {
-                    'hostname': hostname
-                },
-                {
-                    '$pull': {
-                        'playerlist': {
-                            'socketId': ctx.socket.id
-                        }
+        await Rooms.updateOne(
+            {
+                'hostname': hostname
+            },
+            {
+                '$pull': {
+                    'playerlist': {
+                        'socketId': ctx.socket.id
                     }
                 }
-            );
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+            }
+        );
+
+        // 업데이트된 room 가져옴
+        const updatedRoom = await Rooms.findOne({ 'hostname': hostname });
 
         // playerlist 에 한명이라도 있는지 확인
-        try {
-            room = await Rooms.findOne({
-                'hostname': hostname,
-            })
-        } catch (e) {
-            console.log(e);
-            return;
-        }
-        if (room.playerlist[0] === undefined) { // playerlist 가 비어있으면
+        if (updatedRoom.playerlist[0] === undefined) { // playerlist 가 비어있으면
             if (playState[hostname] !== undefined) {
                 clearTimeout(playState[hostname][1]); // 타이머 해제
                 playState[hostname] = [false, null, '', '', null]; // 초기화

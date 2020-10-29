@@ -146,8 +146,6 @@ Account.methods.sendMail = function () {
             "<a href='" + host + '/auth/emailverify?email=' + this.email.address + '&key=' + this.email.key_for_verify + "'>이메일 인증하기</a>"
     }
 
-    console.log('이메일 보내기 전')
-
     return smtpTransport.sendMail(mailOpt);
 }
 
