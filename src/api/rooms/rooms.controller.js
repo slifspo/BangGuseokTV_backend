@@ -59,10 +59,10 @@ exports.getNextRooms = async (ctx) => {
 
     console.log(rooms.length);
 
-    const start = endCursor + 1;
+    const start = +endCursor + 1;
     console.log(start);
     if (start < rooms.length) { // rooms 개수보다 적다면
-        const end = start + 12;
+        const end = +start + 12;
         console.log(end);
         if (end < rooms.length) {
             result = rooms.slice(start, end);
