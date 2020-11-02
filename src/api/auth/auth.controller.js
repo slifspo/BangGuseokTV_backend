@@ -3,6 +3,71 @@ const Accounts = require('models/account');
 const Rooms = require('models/room');
 const { passport } = require('lib/passport');
 
+// 로컬 회원가입
+exports.localRegister = async (ctx) => {
+    // 데이터 검증
+    const schema = Joi.object().keys({
+        username: Joi.string().regex(/^[a-z|A-Z|0-9]+$/).min(3).max(20).required(), // 영어숫자 3~20자
+        email: Joi.string().email().required(),
+        password: Joi.string().required().min(6)
+    });
+
+    const result = Joi.validate(ctx.request.body, schema);
+
+    if (result.error) {
+        ctx.status = 400; // Bad request
+        return;
+    }
+
+    // 아이디 / 이메일 중복 체크
+    const existing = await Accounts.findByEmailOrUsername(ctx.request.body);
+
+    if (existing) {
+        // 중복되는 아이디/이메일이 있을 경우
+        ctx.status = 409; // Conflict
+        // 어떤 값이 중복되었는지 알려줍니다
+        ctx.body = {
+            key: existing.email.address === ctx.request.body.email ? 'email' : 'username'
+        };
+        return;
+    }
+
+    // 계정 생성
+    const account = await Accounts.localRegister(ctx.request.body);
+
+    // 방 생성
+    const room = await Rooms.createRoom(account._id);
+
+    // 방의 hostname 변경
+    await Rooms.updateOne(
+        {
+            'host_id': account._id
+        },
+        {
+            '$set': {
+                'hostname': ctx.request.body.username
+            }
+        }
+    );
+
+    // 계정의 room_id 필드 업데이트
+    await account.update({ 'room_id': room._id });
+
+    // 인증 메일 전송
+    await account.sendMail();
+
+    // 토큰 생성
+    const token = await account.generateToken();
+
+    ctx.cookies.set('access_token', token, {
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+        sameSite: 'none',
+        secure: true
+    });
+    ctx.body = account.profile; // 프로필 정보로 응답합니다.
+};
+
 // 로컬 로그인
 exports.localLogin = async (ctx) => {
     // 데이터 검증
