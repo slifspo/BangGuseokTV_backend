@@ -108,7 +108,7 @@ exports.getUserRoom = async (ctx) => {
     }
 
     // 특정유저의 방 찾기
-    const room = await Rooms.findByUsername(username);
+    const room = await Rooms.findByHostname(username);
 
     ctx.body = room
 };

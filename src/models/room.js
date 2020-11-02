@@ -43,6 +43,11 @@ Room.statics.findByUserId = function (host_id) {
     return this.findOne({ 'host_id': host_id }).exec();
 }
 
+// host_id 로 방 검색
+Room.statics.findByHostname = function (hostname) {
+    return this.findOne({ 'hostname': hostname }).exec();
+}
+
 // 방 생성
 Room.statics.createRoom = function (host_id) {
     const room = new this({
