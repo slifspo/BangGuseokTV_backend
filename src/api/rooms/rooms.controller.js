@@ -63,9 +63,10 @@ exports.getNextRooms = async (ctx) => {
 // 방 이미지 DB에 업로드
 exports.updateThumbnail = async (ctx) => {
     const { user } = ctx.request;
+    const { hostname } = ctx.params;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != hostname) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -106,14 +107,8 @@ exports.getUserRoom = async (ctx) => {
         return;
     }
 
-    // 해당하는 유저인지 확인
-    if (user.profile.username !== username) {
-        ctx.status = 403; // Forbidden
-        return;
-    }
-
-    // 해당 유저의 방 찾기
-    const room = await Rooms.findByUserId(user._id);
+    // 특정유저의 방 찾기
+    const room = await Rooms.findByUsername(username);
 
     ctx.body = room
 };
@@ -121,10 +116,11 @@ exports.getUserRoom = async (ctx) => {
 // 방 설정 업데이트
 exports.updateProfile = async (ctx) => {
     const { user } = ctx.request;
+    const { hostname } = ctx.params;
     const { roomTitle, roomExplain } = ctx.request.body;
 
     // 권한 검증
-    if (!user) {
+    if (!user || user.profile.username != hostname) {
         ctx.status = 403; // Forbidden
         return;
     }
