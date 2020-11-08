@@ -93,7 +93,7 @@ exports.updateThumbnail = async (ctx) => {
         'profile.thumbnail.contentType': contentType
     });
 
-    ctx.status = 200;
+    ctx.status = 204 // No Content;
 };
 
 // 특정유저의 방 검색
@@ -134,7 +134,7 @@ exports.updateProfile = async (ctx) => {
         'profile.description': roomExplain
     });
 
-    ctx.status = 200;
+    ctx.status = 204 // No Content;
 };
 
 // playerlist 추가
