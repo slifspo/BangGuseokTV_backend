@@ -2,7 +2,8 @@ const Rooms = require('models/room');
 const Accounts = require('models/account');
 const zenio = require('zenio');
 
-let playState = {}; // [isPlaying, timerObject, username, videoId, videoDuration]
+// 추가,삭제가 잦으므로 Map 사용
+const playInfoMap = new Map(); // key: hostname, value: playStateObj, 방마다 playerlist의 정보를 가지고있는 해시맵
 
 // convert ISO 8601 duration (second)
 const convertTime = (youtube_time) => {
@@ -17,19 +18,71 @@ const getTimeLeft = timeout => {
     return timeleft;
 }
 
+// playInfoMap에서 키값에 해당하는 playInfo 반환
+const getOrDefaultPlayInfo = (hostname) => {
+    let playInfo = playInfoMap.get(hostname);
+
+    // hostname 에 playInfo 가 없다면 새로만들기
+    if (playInfo === undefined) {
+        playInfo = {
+            queue: [], // 대기열, Array를 Queue처럼 사용
+            timerObj: null, // 현재 돌아가는 타이머 객체
+            username: null, // 현재 재생중인 유저
+            videoId: null, // 현재 재생중인 비디오Id
+            videoDuration: null, // 현재 재생중인 비디오 총 재생시간
+        }
+        playInfoMap.set(hostname, playInfo);
+    }
+
+    return playInfo;
+}
+
+// playInfoMap의 요소 삭제
+const deletePlayinfo = (hostname) => {
+    playInfoMap.delete(hostname);
+}
+
+// YouTube Data API 로 동영상 정보 요청하기
+const requestYoutubeVideoInfo = (videoId) => {
+    // 검색 파라미터 설정
+    const optionParams = {
+        id: videoId,
+        part: "contentDetails",
+        key: process.env.GOOGLE_API_KEY
+    };
+
+    // URL 생성
+    let url = "https://www.googleapis.com/youtube/v3/videos?";
+    for (let option in optionParams) {
+        url += option + "=" + optionParams[option] + "&";
+    }
+    url = url.substr(0, url.length - 1); //url의마지막에 붙어있는 & 정리
+
+    // http 요청 옵션 설정
+    zenio.setOptions({
+        json: true, //automatically parsing of JSON response
+        timeout: 3000    //3s timeout
+    })
+
+    // http 요청
+    const res = await zenio.get(url);
+
+    return res.items[0];
+}
+
+// 대기열 시작
 const startPlayerlist = async (io, hostname) => {
-    // playState 상태 시작으로 변경
-    playState[hostname][0] = true;
 
-    // playerlist 의 first player 찾기
-    const room = await Rooms.findOne({ 'hostname': hostname });
-    const firstPlayer = room.playerlist[0];
+    // hostname 의 playInfo 를 가져옴
+    let playInfo = getOrDefaultPlayInfo(hostname);
 
-    // playerlist 에 아무도 없을 때
-    if (firstPlayer === undefined) {
-        //console.log(hostname + ' 방의 playerlist 멈춤');
-        // playerlist 정지
-        playState[hostname] = [false, null, '', '', null];
+    // 대기열의 맨 앞의 유저이름 dequeue
+    const firstUsername = playInfo.queue.shift();
+
+    // 대기열에 아무도 없다면
+    if (firstUsername === undefined) {
+        // 해당 방의 playInfo 삭제
+        playInfoMap.delete(hostname);
 
         // 클라이언트 playState 초기화
         io.to(hostname).emit('sendPlayState', {
@@ -37,109 +90,76 @@ const startPlayerlist = async (io, hostname) => {
             videoId: '',
             videoDuration: null
         });
+
+        // 함수 종료
         return;
     }
 
-    // 재생중인 username 저장
-    playState[hostname][2] = firstPlayer.username;
+    // 맨 앞의 유저를 대기열의 맨 뒤로 보내기
+    playInfo.queue.push(firstUsername);
 
-    // firstPlayer를 배열에서 pop
-    await Rooms.updateOne(
-        {
-            'hostname': hostname
-        },
-        {
-            '$pop': { playerlist: -1 }
-        }
-    );
+    // 현재 재생중인 username 설정
+    playInfo.username = firstUsername;
 
-    // firstPlayer 에 해당하는 유저의 firstVideo 찾기
-    const account = await Accounts.findOne({ 'profile.username': firstPlayer.username });
-    const selectedPlaylist = account.selectedPlaylist;
+    // firstUser 의 Account 쿼리
+    const firstUserAccount = await Accounts.findByUsername(firstUsername);
+    // firstUser의 선택된 playlist의 맨앞의 video 얻기
+    const selectedPlaylist = firstUserAccount.selectedPlaylist;
     const firstVideo = account.playlists[selectedPlaylist].videos[0];
 
-    let videoDuration = null; // 비디오 재생시간
-    // firstPlayer의 firstVideo가 있으면
+    // firstVideo가 존재하면
     if (firstVideo !== undefined) {
         //console.log(firstPlayer.username + ' 의 playlist \'' + account.playlists[selectedPlaylist].name + '\' 의 ' + firstVideo.videoTitle + ' 이 재생중');
 
         // 재생중인 videoId 저장
-        playState[hostname][3] = firstVideo.videoId;
+        playInfo.videoId = firstVideo.videoId;
 
-        // YouTube Data API 로 video duration 얻기
-        const optionParams = { // 검색 파라미터
-            id: firstVideo.videoId,
-            part: "contentDetails",
-            key: process.env.GOOGLE_API_KEY
-        };
-        let url = "https://www.googleapis.com/youtube/v3/videos?"; // URL 생성
-        for (let option in optionParams) {
-            url += option + "=" + optionParams[option] + "&";
-        }
-        url = url.substr(0, url.length - 1); //url의마지막에 붙어있는 & 정리
+        // 유튜브에서 videoId의 동영상 정보 받아오기
+        const videoInfo = requestYoutubeVideoInfo(firstVideo.videoId);
 
-        // http 요청 옵션 설정
-        zenio.setOptions({
-            json: true, //automatically parsing of JSON response
-            timeout: 3000    //3s timeout
-        })
+        // 동영상 정보를 받아오지 못했다면
+        if (videoInfo === undefined) {
+            playInfo.videoDuration = 3;
+        } else { // 동영상 정보를 잘 받아왔다면
+            // 유튜브 video 의 재생시간을 변환해서 videoDuration 설정
+            playInfo.videoDuration = convertTime(videoInfo.contentDetails.duration);
 
-        // http 요청
-        const res = await zenio.get(url);
-
-        // 유튜브 video 의 재생시간 변환
-        videoDuration = convertTime(res.items[0].contentDetails.duration);
-
-        // firstVideo를 배열에서 pop
-        await Accounts.updateOne(
-            {
-                'profile.username': firstPlayer.username,
-            },
-            {
-                '$pop': { ['playlists.' + selectedPlaylist + '.videos']: -1 }
-            }
-        );
-
-        // firstVideo를 배열 마지막에 add
-        await Accounts.updateOne(
-            {
-                'profile.username': firstPlayer.username,
-            },
-            {
-                '$push': {
-                    ['playlists.' + selectedPlaylist + '.videos']: firstVideo
+            // firstVideo를 배열에서 pop
+            await Accounts.updateOne(
+                {
+                    'profile.username': firstUsername,
+                },
+                {
+                    '$pop': { ['playlists.' + selectedPlaylist + '.videos']: -1 }
                 }
-            }
-        )
+            );
 
-        // firstPlayer를 배열 마지막에 add
-        await Rooms.updateOne(
-            {
-                'hostname': hostname
-            },
-            {
-                '$addToSet': {
-                    'playerlist': {
-                        'username': firstPlayer.username,
-                        'socketId': firstPlayer.socketId
+            // firstVideo를 배열 마지막에 add
+            await Accounts.updateOne(
+                {
+                    'profile.username': firstUsername,
+                },
+                {
+                    '$push': {
+                        ['playlists.' + selectedPlaylist + '.videos']: firstVideo
                     }
                 }
-            }
-        )
+            )
 
-        // playState를 emit
-        io.to(hostname).emit('sendPlayState', {
-            username: firstPlayer.username,
-            videoId: firstVideo.videoId,
-            videoDuration: videoDuration
-        });
+            // playInfo를 emit
+            io.to(hostname).emit('sendPlayState', {
+                username: firstUsername,
+                videoId: firstVideo.videoId,
+                videoDuration: videoDuration
+            });
+        }
     }
 
-    videoDuration = (videoDuration === null) ? 2 : videoDuration; // 비디오 재생시간
-    playState[hostname][4] = videoDuration
-    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, io, hostname); // 재귀타이머 설정
-    playState[hostname][1] = timerObj; // 타이머 객체 저장
+    // 타이머 재귀 실행
+    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, io, hostname); 
+    // 타이머 객체 저장
+    playInfo.timerObj = timerObj;
 };
 module.exports = {
-    playState, getTimeLeft, startPlayerlist
+    getTimeLeft, startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo
 }
