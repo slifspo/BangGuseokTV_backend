@@ -5,6 +5,9 @@ const zenio = require('zenio');
 // 추가,삭제가 잦으므로 Map 사용
 const playInfoMap = new Map(); // key: hostname, value: playStateObj, 방마다 playerlist의 정보를 가지고있는 해시맵
 
+// 비디오 재생 실패 시 delay, 초단위
+const failDelay = 3;
+
 // convert ISO 8601 duration (second)
 const convertTime = (youtube_time) => {
     array = youtube_time.match(/(\d+)(?=[MHS])/ig) || [];
@@ -103,60 +106,69 @@ const startPlayerlist = async (io, hostname) => {
 
     // firstUser 의 Account 쿼리
     const firstUserAccount = await Accounts.findByUsername(firstUsername);
-    // firstUser의 선택된 playlist의 맨앞의 video 얻기
+    // firstUser 가 선택한 재생목록 번호
     const selectedPlaylist = firstUserAccount.selectedPlaylist;
-    const firstVideo = account.playlists[selectedPlaylist].videos[0];
 
-    // firstVideo가 존재하면
-    if (firstVideo !== undefined) {
-        //console.log(firstPlayer.username + ' 의 playlist \'' + account.playlists[selectedPlaylist].name + '\' 의 ' + firstVideo.videoTitle + ' 이 재생중');
+    // 선택한 재생목록이 있다면
+    if (selectedPlaylist !== -1) {
+        // firstUser의 선택된 playlist의 맨앞의 video 얻기
+        const firstVideo = account.playlists[selectedPlaylist].videos[0];
 
-        // 재생중인 videoId 저장
-        playInfo.videoId = firstVideo.videoId;
+        // firstVideo가 존재하면
+        if (firstVideo !== undefined) {
+            //console.log(firstPlayer.username + ' 의 playlist \'' + account.playlists[selectedPlaylist].name + '\' 의 ' + firstVideo.videoTitle + ' 이 재생중');
 
-        // 유튜브에서 videoId의 동영상 정보 받아오기
-        const videoInfo = await requestYoutubeVideoInfo(firstVideo.videoId);
+            // 재생중인 videoId 저장
+            playInfo.videoId = firstVideo.videoId;
 
-        // 동영상 정보를 받아오지 못했다면
-        if (videoInfo === undefined) {
-            playInfo.videoDuration = 3;
-        } else { // 동영상 정보를 잘 받아왔다면
-            // 유튜브 video 의 재생시간을 변환해서 videoDuration 설정
-            playInfo.videoDuration = convertTime(videoInfo.contentDetails.duration);
+            // 유튜브에서 videoId의 동영상 정보 받아오기
+            const videoInfo = await requestYoutubeVideoInfo(firstVideo.videoId);
 
-            // firstVideo를 배열에서 pop
-            await Accounts.updateOne(
-                {
-                    'profile.username': firstUsername,
-                },
-                {
-                    '$pop': { ['playlists.' + selectedPlaylist + '.videos']: -1 }
-                }
-            );
+            // 동영상 정보를 잘 받아왔다면
+            if (videoInfo !== undefined) {
+                // 유튜브 video 의 재생시간을 변환해서 videoDuration 설정
+                playInfo.videoDuration = convertTime(videoInfo.contentDetails.duration);
 
-            // firstVideo를 배열 마지막에 add
-            await Accounts.updateOne(
-                {
-                    'profile.username': firstUsername,
-                },
-                {
-                    '$push': {
-                        ['playlists.' + selectedPlaylist + '.videos']: firstVideo
+                // firstVideo를 배열에서 pop
+                await Accounts.updateOne(
+                    {
+                        'profile.username': firstUsername,
+                    },
+                    {
+                        '$pop': { ['playlists.' + selectedPlaylist + '.videos']: -1 }
                     }
-                }
-            )
+                );
 
-            // playInfo를 emit
-            io.to(hostname).emit('sendPlayState', {
-                username: firstUsername,
-                videoId: firstVideo.videoId,
-                videoDuration: videoDuration
-            });
+                // firstVideo를 배열 마지막에 add
+                await Accounts.updateOne(
+                    {
+                        'profile.username': firstUsername,
+                    },
+                    {
+                        '$push': {
+                            ['playlists.' + selectedPlaylist + '.videos']: firstVideo
+                        }
+                    }
+                )
+
+                // playInfo를 emit
+                io.to(hostname).emit('sendPlayState', {
+                    username: firstUsername,
+                    videoId: firstVideo.videoId,
+                    videoDuration: videoDuration
+                });
+            } else {
+                playInfo.videoDuration = failDelay;
+            }
+        } else {
+            playInfo.videoDuration = failDelay;
         }
+    } else {
+        playInfo.videoDuration = failDelay;
     }
 
     // 타이머 재귀 실행
-    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, io, hostname); 
+    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, io, hostname);
     // 타이머 객체 저장
     playInfo.timerObj = timerObj;
 };
