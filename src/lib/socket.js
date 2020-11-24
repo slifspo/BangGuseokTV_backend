@@ -1,10 +1,13 @@
 const Rooms = require('models/room');
 const Accounts = require('models/account');
-const { playState, startPlayerlist } = require('lib/playerlist');
+const { startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo, getPlayInfo, getTimeLeft } = require('lib/playerlist');
 
-// 추가,삭제가 잦으므로 Map 사용
+// 로그인한 유저의 소켓id
 const loginUsername = new Map(); // key: username, value: socket.id
+// 소켓id의 유저이름
 const loginSocketId = new Map(); // key: socket.id, value: username
+// 유저가 어떤 hostname의 대기열에 참가했는지 저장
+const joinedPlayerlist = new Map(); // key: username, value: hostname
 
 // 친구목록에 있는 유저에게 connected/disconnected 알리기
 const userConnected = async (connUsername, io, isConnected) => {
@@ -21,8 +24,48 @@ const userConnected = async (connUsername, io, isConnected) => {
             io.to(friendSocketId).emit('friendConnected', { connUsername, isConnected });
         }
     });
+}
 
-    return;
+// 유저를 대기열에서 제거
+const removeUserFromPlayerlist = (io, username) => {
+    // 유저가 대기열에 참가한 방의 hostname
+    const hostname = joinedPlayerlist.get(username);
+
+    // 유저가 대기열에 참가했다면
+    if (hostname !== undefined) {
+        const playInfo = getPlayInfo(hostname);
+
+        // 대기열에서 유저 제거
+        const pos = playInfo.queue.indexOf(username);
+        playInfo.queue.splice(pos, 1);
+
+        // 대기열이 비었다면
+        if (playInfo.queue.length === 0) {
+            // 타이머 해제
+            clearTimeout(playInfo.timerObj);
+
+            // playInfo 삭제
+            deletePlayinfo(hostname);
+
+            // 방에 있는 유저들의 playInfo 초기화
+            io.to(hostname).emit('sendPlayInfo', {
+                sort: 'info',
+                username: '',
+                videoId: '',
+                videoDuration: null,
+            });
+        } else { // 대기열에 유저가 남아있으면
+            // 접속종료한 유저 === 재생중이던 유저일 경우
+            if (playInfo.username === username) {
+                // 대기열 다시 시작
+                clearTimeout(playInfo.timerObj);
+                startPlayerlist(io, hostname);
+            }
+        }
+    }
+
+    // 유저 제거
+    joinedPlayerlist.delete(username);
 }
 
 // Exports
@@ -117,6 +160,62 @@ module.exports.init = (io) => {
                 }
             }
         })
+
+        // 유저가 대기열에 참가했을때
+        socket.on('joinPlayerlist', async (data) => {
+            const { username, hostname } = data;
+
+            // joinedPlayerlist 에 추가
+            joinedPlayerlist.set(username, hostname);
+
+            // playerlist 에 유저 추가
+            const playInfo = getOrDefaultPlayInfo(hostname);
+            playInfo.queue.push(username);
+
+            // 대기열이 돌아가고 있지 않았다면
+            if (playInfo.timerObj === null) {
+                // 대기열 시작
+                startPlayerlist(io, hostname);
+            }
+        })
+
+        // 유저가 대기열을 나갔을때
+        socket.on('leavePlayerlist', async (data) => {
+            const { username } = data;
+
+            removeUserFromPlayerlist(io, username);
+        })
+
+        // 유저가 playInfo 요청할때
+        socket.on('reqPlayInfo', async (data) => {
+            const { sort, hostname } = data;
+
+            // playInfo 가져옴
+            const playInfo = getPlayInfo(hostname);
+
+            // playInfo 가 있다면
+            if (playInfo !== undefined) {
+                // info 요청시
+                if (sort === 'info') {
+                    // 해당 유저에게 playInfo 보냄
+                    io.to(socket.id).emit('sendPlayInfo', {
+                        sort: sort,
+                        username: playInfo.username,
+                        videoId: playInfo.videoId,
+                        videoDuration: playInfo.videoDuration,
+                    });
+                } else if (sort === 'playback') { // playback 요청시
+                    // 남은시간
+                    const timeleft = getTimeLeft(playInfo.timerObj);
+
+                    // 해당 유저에게 현재 재생시간 보냄
+                    io.to(socket.id).emit('sendPlayInfo', {
+                        sort: sort,
+                        playback: playInfo.videoDuration - timeleft,
+                    });
+                }
+            }
+        })
     })
 
     // 소켓 연결해제
@@ -125,75 +224,17 @@ module.exports.init = (io) => {
         // 로그인하지 않은 유저라면 여기서 멈춤
         if (!loginSocketId.has(ctx.socket.id)) return;
 
+        // 접속종료한 유저이름 얻기
         const disconnUsername = loginSocketId.get(ctx.socket.id);
 
         // 친구목록에 있는 유저에게 disconnected 알리기
-        await userConnected(disconnUsername, io, false);
+        userConnected(disconnUsername, io, false);
+
+        // 접속종료한 유저 대기열에서 제거
+        removeUserFromPlayerlist(io, disconnUsername);
 
         // 유저 제거
         loginUsername.delete(disconnUsername);
         loginSocketId.delete(ctx.socket.id);
-
-        /* 
-         * 유저가 playerlist에 참가한상태로 disconnect했을 경우 
-         * playerlist에서 나가게하기 
-         */
-        // socket id 가 일치하는 room 을 검색
-        const room = await Rooms.findOne({ 'playerlist.socketId': ctx.socket.id });
-
-        if (room === null) return;
-        const { hostname } = room;
-
-        // socket id 와 일치하는 playerlist 의 username field 얻기
-        const result = await Rooms.find(
-            {
-                'hostname': hostname,
-                'playerlist': {
-                    '$elemMatch': { socketId: ctx.socket.id }
-                }
-            },
-            {
-                'playerlist.$.username': 1
-            }
-        )
-
-        //console.log(result[0]);
-        const { username } = result[0].playerlist[0];
-
-        // playerlist 에서 제거
-        await Rooms.updateOne(
-            {
-                'hostname': hostname
-            },
-            {
-                '$pull': {
-                    'playerlist': {
-                        'socketId': ctx.socket.id
-                    }
-                }
-            }
-        );
-
-        // 업데이트된 room 가져옴
-        const updatedRoom = await Rooms.findOne({ 'hostname': hostname });
-
-        // playerlist 에 한명이라도 있는지 확인
-        if (updatedRoom.playerlist[0] === undefined) { // playerlist 가 비어있으면
-            if (playState[hostname] !== undefined) {
-                clearTimeout(playState[hostname][1]); // 타이머 해제
-                playState[hostname] = [false, null, '', '', null]; // 초기화
-                io.to(hostname).emit('sendPlayState', { // 클라이언트 playState 초기화
-                    username: '',
-                    videoId: '',
-                    videoDuration: null
-                });
-            }
-        } else { // playerlist 에 유저가 있으면
-            if (playState[hostname][2] === username) { // play 중인 유저가 나갔을 시
-                clearTimeout(playState[hostname][1]); // 현재 타이머 해제
-                playState[hostname] = [false, null, '', '', null]; // 초기화
-                startPlayerlist(io, hostname); // playerlist 재시작
-            }
-        }
     })
 }

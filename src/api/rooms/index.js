@@ -7,9 +7,5 @@ rooms.get('/cursor/:endCursor', roomsCtrl.getNextRooms); // 커서 다음방들 
 rooms.patch('/:hostname/profile/thumbnail', roomsCtrl.updateThumbnail); // 방 이미지 DB에 업로드
 rooms.get('/:username', roomsCtrl.getUserRoom); // 특정유저의 방 검색
 rooms.patch('/:hostname/profile', roomsCtrl.updateProfile); // 방 설정 업데이트
-rooms.post('/:hostname/playerlist', roomsCtrl.joinPlayerlist); // playerlist 추가
-rooms.delete('/:hostname/playerlist', roomsCtrl.leavePlayerlist); // playerlist 제거
-rooms.get('/:hostname/playstate', roomsCtrl.getPlayState); // playState 얻기
-rooms.get('/:hostname/timeleft', roomsCtrl.getTimeLeft); // 동영상 남은시간 얻기
 
 module.exports = rooms;
