@@ -7,7 +7,7 @@ const loginUsername = new Map(); // key: username, value: socket.id
 // 소켓id의 유저이름
 const loginSocketId = new Map(); // key: socket.id, value: username
 // 유저가 어떤 hostname의 대기열에 참가했는지 저장
-const joinedHost = new Map(); // key: username, value: hostname
+const joinedPlayerlist = new Map(); // key: username, value: hostname
 
 // 친구목록에 있는 유저에게 connected/disconnected 알리기
 const userConnected = async (connUsername, io, isConnected) => {
@@ -29,7 +29,7 @@ const userConnected = async (connUsername, io, isConnected) => {
 // 접속종료한 유저 대기열에서 제거
 const removeUserFromPlayerlist = (io, username) => {
     // 유저가 대기열에 참가한 방의 hostname
-    const hostname = joinedHost.get(username);
+    const hostname = joinedPlayerlist.get(username);
 
     // 유저가 대기열에 참가했다면
     if (hostname !== undefined) {
@@ -161,8 +161,8 @@ module.exports.init = (io) => {
         socket.on('joinPlayerlist', async (data) => {
             const { username, hostname } = data;
 
-            // joinedHost 에 추가
-            joinedHost.set(username, hostname);
+            // joinedPlayerlist 에 추가
+            joinedPlayerlist.set(username, hostname);
 
             // playerlist 에 유저 추가
             const playInfo = getOrDefaultPlayInfo(username, hostname);
@@ -201,6 +201,6 @@ module.exports.init = (io) => {
         // 유저 제거
         loginUsername.delete(disconnUsername);
         loginSocketId.delete(ctx.socket.id);
-        joinedHost.delete(disconnUsername);
+        joinedPlayerlist.delete(disconnUsername);
     })
 }
