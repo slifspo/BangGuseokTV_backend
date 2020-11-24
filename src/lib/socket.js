@@ -189,23 +189,27 @@ module.exports.init = (io) => {
             // playInfo 가져옴
             const playInfo = getPlayInfo(hostname);
 
-            // info 요청시
-            if (sort === 'info') {
-                // playInfo 보냄
-                io.to(hostname).emit('sendPlayInfo', {
-                    sort: sort,
-                    username: playInfo.username,
-                    videoId: playInfo.videoId,
-                    videoDuration: playInfo.videoDuration,
-                });
-            } else if (sort === 'timeleft') { // timeleft 요청시
-                // timeleft 구함
+            // playInfo 가 있다면
+            if (playInfo !== undefined) {
+                // info 요청시
+                if (sort === 'info') {
+                    // playInfo 보냄
+                    io.to(hostname).emit('sendPlayInfo', {
+                        sort: sort,
+                        username: playInfo.username,
+                        videoId: playInfo.videoId,
+                        videoDuration: playInfo.videoDuration,
+                    });
+                } else if (sort === 'timeleft') { // timeleft 요청시
+                    // timeleft 구함
+                    const timeleft = getTimeLeft(playInfo.timerObj);
 
-                // timeleft 보냄
-                io.to(hostname).emit('sendPlayInfo', {
-                    sort: sort,
-                    videoTimeLeft: e,
-                });
+                    // timeleft 보냄
+                    io.to(hostname).emit('sendPlayInfo', {
+                        sort: sort,
+                        videoTimeLeft: timeleft,
+                    });
+                }
             }
         })
     })
