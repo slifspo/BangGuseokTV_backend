@@ -210,13 +210,11 @@ module.exports.init = (io) => {
                 } else if (sort === 'playback') { // playback 요청시
                     // 남은시간
                     const timeleft = getTimeLeft(playInfo.timerObj);
-                    // 총 재생시간
-                    const videoDuration = playInfo.videoDuration;
-
+                    
                     // 해당 유저에게 현재 재생시간 보냄
                     io.to(userSocketId).emit('sendPlayInfo', {
                         sort: sort,
-                        playback: timeleft - videoDuration,
+                        playback: playInfo.videoDuration - timeleft,
                     });
                 }
             }
