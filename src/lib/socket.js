@@ -181,6 +181,21 @@ module.exports.init = (io) => {
 
             removeUserFromPlayerlist(io, username);
         })
+
+        // 유저가 playState 요청할때
+        socket.on('reqPlayInfo', async (data) => {
+            const { hostname } = data;
+
+            // playInfo 가져옴
+            const playInfo = getOrDefaultPlayInfo(username, hostname);
+
+            // playState 보냄
+            io.to(hostname).emit('sendPlayInfo', {
+                username: playInfo.username,
+                videoId: playInfo.videoId,
+                videoDuration: playInfo.videoDuration,
+            });
+        })
     })
 
     // 소켓 연결해제
