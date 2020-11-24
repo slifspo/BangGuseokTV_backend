@@ -92,7 +92,7 @@ const startPlayerlist = async (io, hostname) => {
         // 해당 방의 playInfo 삭제
         playInfoMap.delete(hostname);
 
-        // 클라이언트 playInfo 초기화
+        // 방에 있는 유저들의 playInfo 초기화
         io.to(hostname).emit('sendPlayInfo', {
             sort: 'info',
             username: '',
@@ -157,7 +157,7 @@ const startPlayerlist = async (io, hostname) => {
                     }
                 )
 
-                // playInfo를 emit
+                // 방에 있는 유저들에게 playInfo를 emit
                 io.to(hostname).emit('sendPlayInfo', {
                     sort: 'info',
                     username: firstUsername,

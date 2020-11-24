@@ -47,7 +47,7 @@ const removeUserFromPlayerlist = (io, username) => {
             // playInfo 삭제
             deletePlayinfo(hostname);
 
-            // 클라이언트 playInfo 초기화
+            // 방에 있는 유저들의 playInfo 초기화
             io.to(hostname).emit('sendPlayInfo', {
                 sort: 'info',
                 username: '',
@@ -200,7 +200,7 @@ module.exports.init = (io) => {
             if (playInfo !== undefined) {
                 // info 요청시
                 if (sort === 'info') {
-                    // 유저에게 playInfo 보냄
+                    // 해당 유저에게 playInfo 보냄
                     io.to(userSocketId).emit('sendPlayInfo', {
                         sort: sort,
                         username: playInfo.username,
@@ -210,9 +210,8 @@ module.exports.init = (io) => {
                 } else if (sort === 'timeleft') { // timeleft 요청시
                     // timeleft 구함
                     const timeleft = getTimeLeft(playInfo.timerObj);
-                    
 
-                    // 유저에게 timeleft 보냄
+                    // 해당 유저에게 timeleft 보냄
                     io.to(userSocketId).emit('sendPlayInfo', {
                         sort: sort,
                         videoTimeLeft: timeleft,
