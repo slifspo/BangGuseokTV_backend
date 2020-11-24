@@ -117,7 +117,7 @@ const startPlayerlist = async (io, hostname) => {
     // 선택한 재생목록이 있다면
     if (selectedPlaylist !== -1) {
         // firstUser의 선택된 playlist의 맨앞의 video 얻기
-        const firstVideo = account.playlists[selectedPlaylist].videos[0];
+        const firstVideo = firstUserAccount.playlists[selectedPlaylist].videos[0];
 
         // firstVideo가 존재하면
         if (firstVideo !== undefined) {
