@@ -43,7 +43,7 @@ const deletePlayinfo = (hostname) => {
 }
 
 // YouTube Data API 로 동영상 정보 요청하기
-const requestYoutubeVideoInfo = (videoId) => {
+const requestYoutubeVideoInfo = async (videoId) => {
     // 검색 파라미터 설정
     const optionParams = {
         id: videoId,
@@ -115,7 +115,7 @@ const startPlayerlist = async (io, hostname) => {
         playInfo.videoId = firstVideo.videoId;
 
         // 유튜브에서 videoId의 동영상 정보 받아오기
-        const videoInfo = requestYoutubeVideoInfo(firstVideo.videoId);
+        const videoInfo = await requestYoutubeVideoInfo(firstVideo.videoId);
 
         // 동영상 정보를 받아오지 못했다면
         if (videoInfo === undefined) {
