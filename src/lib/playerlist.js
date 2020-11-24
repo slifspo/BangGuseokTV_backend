@@ -35,8 +35,8 @@ const getOrDefaultPlayInfo = (hostname) => {
         playInfo = {
             queue: [], // 대기열, Array를 Queue처럼 사용
             timerObj: null, // 현재 돌아가는 타이머 객체
-            username: null, // 현재 재생중인 유저
-            videoId: null, // 현재 재생중인 비디오Id
+            username: '', // 현재 재생중인 유저
+            videoId: '', // 현재 재생중인 비디오Id
             videoDuration: null, // 현재 재생중인 비디오 총 재생시간
         }
         playInfoMap.set(hostname, playInfo);
@@ -92,8 +92,9 @@ const startPlayerlist = async (io, hostname) => {
         // 해당 방의 playInfo 삭제
         playInfoMap.delete(hostname);
 
-        // 클라이언트 playState 초기화
-        io.to(hostname).emit('sendPlayState', {
+        // 클라이언트 playInfo 초기화
+        io.to(hostname).emit('sendPlayInfo', {
+            sort: 'info',
             username: '',
             videoId: '',
             videoDuration: null

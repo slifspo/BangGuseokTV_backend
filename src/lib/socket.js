@@ -26,7 +26,7 @@ const userConnected = async (connUsername, io, isConnected) => {
     });
 }
 
-// 접속종료한 유저 대기열에서 제거
+// 유저를 대기열에서 제거
 const removeUserFromPlayerlist = (io, username) => {
     // 유저가 대기열에 참가한 방의 hostname
     const hostname = joinedPlayerlist.get(username);
@@ -47,11 +47,12 @@ const removeUserFromPlayerlist = (io, username) => {
             // playInfo 삭제
             deletePlayinfo(hostname);
 
-            // 클라이언트 playState 초기화
-            io.to(hostname).emit('sendPlayState', {
+            // 클라이언트 playInfo 초기화
+            io.to(hostname).emit('sendPlayInfo', {
+                sort: 'info',
                 username: '',
                 videoId: '',
-                videoDuration: null
+                videoDuration: null,
             });
         } else { // 대기열에 유저가 남아있으면
             // 접속종료한 유저 === 재생중이던 유저일 경우
