@@ -6,7 +6,7 @@ const { startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo } = require('lib/p
 const loginUsername = new Map(); // key: username, value: socket.id
 // 소켓id의 유저이름
 const loginSocketId = new Map(); // key: socket.id, value: username
-// 대기열에 참가한 유저가 들어간 방의 hostname
+// 유저가 어떤 hostname의 대기열에 참가했는지 저장
 const joinedHost = new Map(); // key: username, value: hostname
 
 // 친구목록에 있는 유저에게 connected/disconnected 알리기
@@ -157,9 +157,30 @@ module.exports.init = (io) => {
             }
         })
 
-        // TODOLIST:
-        // 유저가 대기열에 참가했을때 Map으로 joinedHost -> key:username, value:hostname 해서 
-        // 대기열에 참가한 유저가 어떤 hostname의 대기열에 참가했는지를 저장하자
+        // 유저가 대기열에 참가했을때
+        socket.on('joinPlayerlist', async (data) => {
+            const { username, hostname } = data;
+
+            // joinedHost 에 추가
+            joinedHost.set(username, hostname);
+
+            // playerlist 에 유저 추가
+            const playInfo = getOrDefaultPlayInfo(username, hostname);
+            playInfo.queue.push(username);
+
+            // 대기열이 돌아가고 있지 않았다면
+            if (playInfo.timerObj === null) {
+                // 대기열 시작
+                startPlayerlist(io, hostname);
+            }
+        })
+
+        // 유저가 대기열을 나갔을때
+        socket.on('leavePlayerlist', async (data) => {
+            const { username } = data;
+
+            removeUserFromPlayerlist(io, username);
+        })
     })
 
     // 소켓 연결해제
