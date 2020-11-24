@@ -1,6 +1,6 @@
 const Rooms = require('models/room');
 const Accounts = require('models/account');
-const { startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo, getPlayInfo } = require('lib/playerlist');
+const { startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo, getPlayInfo, getTimeLeft } = require('lib/playerlist');
 
 // 로그인한 유저의 소켓id
 const loginUsername = new Map(); // key: username, value: socket.id
