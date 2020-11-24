@@ -160,7 +160,7 @@ const startPlayerlist = async (io, hostname) => {
                 io.to(hostname).emit('sendPlayState', {
                     username: firstUsername,
                     videoId: firstVideo.videoId,
-                    videoDuration: videoDuration
+                    videoDuration: playInfo.videoDuration
                 });
             } else {
                 playInfo.videoDuration = failDelay;
