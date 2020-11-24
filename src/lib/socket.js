@@ -190,17 +190,30 @@ module.exports.init = (io) => {
         socket.on('reqPlayInfo', async (data) => {
             const { sort, username, hostname } = data;
 
+            console.log('sort: ' + sort)
+            console.log('username: ' + username)
+            console.log('hostname: ' + hostname)
+
             // playInfo 가져옴
             const playInfo = getPlayInfo(hostname);
 
+            console.log(playInfo)
+
             // user 의 socket id 가져옴
             const userSocketId = loginUsername.get(username);
+
+            console.log('userSocketId: ' + userSocketId);
 
             // playInfo 가 있다면
             if (playInfo !== undefined) {
                 // info 요청시
                 if (sort === 'info') {
                     // 해당 유저에게 playInfo 보냄
+                    console.log('해당 유저에게 playInfo 보냄')
+                    console.log('username: ' + playInfo.username);
+                    console.log('videoId: ' + playInfo.videoId);
+                    console.log('videoDuration: ' + playInfo.videoDuration);
+
                     io.to(userSocketId).emit('sendPlayInfo', {
                         sort: sort,
                         username: playInfo.username,
@@ -210,6 +223,9 @@ module.exports.init = (io) => {
                 } else if (sort === 'playback') { // playback 요청시
                     // 남은시간
                     const timeleft = getTimeLeft(playInfo.timerObj);
+
+                    console.log('해당 유저에게 playback 보냄')
+                    console.log('playback: ' + (playInfo.videoDuration - timeleft));
                     
                     // 해당 유저에게 현재 재생시간 보냄
                     io.to(userSocketId).emit('sendPlayInfo', {
