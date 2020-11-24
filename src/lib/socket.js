@@ -165,7 +165,7 @@ module.exports.init = (io) => {
             joinedPlayerlist.set(username, hostname);
 
             // playerlist 에 유저 추가
-            const playInfo = getOrDefaultPlayInfo(username, hostname);
+            const playInfo = getOrDefaultPlayInfo(hostname);
             playInfo.queue.push(username);
 
             // 대기열이 돌아가고 있지 않았다면
@@ -187,7 +187,7 @@ module.exports.init = (io) => {
             const { hostname } = data;
 
             // playInfo 가져옴
-            const playInfo = getOrDefaultPlayInfo(username, hostname);
+            const playInfo = getOrDefaultPlayInfo(hostname);
 
             // playState 보냄
             io.to(hostname).emit('sendPlayInfo', {
