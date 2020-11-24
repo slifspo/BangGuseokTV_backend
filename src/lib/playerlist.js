@@ -22,6 +22,11 @@ const getTimeLeft = timeout => {
 }
 
 // playInfoMap에서 키값에 해당하는 playInfo 반환
+const getPlayInfo = (hostname) => {
+    return playInfoMap.get(hostname);
+}
+
+// playInfoMap에서 키값에 해당하는 playInfo 반환, playInfo가 없으면 
 const getOrDefaultPlayInfo = (hostname) => {
     let playInfo = playInfoMap.get(hostname);
 
@@ -173,5 +178,5 @@ const startPlayerlist = async (io, hostname) => {
     playInfo.timerObj = timerObj;
 };
 module.exports = {
-    getTimeLeft, startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo
+    getTimeLeft, startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo, getPlayInfo
 }
