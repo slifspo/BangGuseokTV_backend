@@ -208,13 +208,15 @@ module.exports.init = (io) => {
                         videoDuration: playInfo.videoDuration,
                     });
                 } else if (sort === 'timeleft') { // timeleft 요청시
-                    // timeleft 구함
+                    // 남은시간
                     const timeleft = getTimeLeft(playInfo.timerObj);
+                    // 총 재생시간
+                    const videoDuration = playInfo.videoDuration;
 
-                    // 해당 유저에게 timeleft 보냄
+                    // 해당 유저에게 현재 재생시간 보냄
                     io.to(userSocketId).emit('sendPlayInfo', {
                         sort: sort,
-                        videoTimeLeft: timeleft,
+                        playback: timeleft - videoDuration,
                     });
                 }
             }
