@@ -1,6 +1,6 @@
 const Rooms = require('models/room');
 const Accounts = require('models/account');
-const { startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo } = require('lib/playerlist');
+const { startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo, getPlayInfo } = require('lib/playerlist');
 
 // 로그인한 유저의 소켓id
 const loginUsername = new Map(); // key: username, value: socket.id
@@ -33,7 +33,7 @@ const removeUserFromPlayerlist = (io, username) => {
 
     // 유저가 대기열에 참가했다면
     if (hostname !== undefined) {
-        const playInfo = getOrDefaultPlayInfo(hostname);
+        const playInfo = getPlayInfo(hostname);
 
         // 대기열에서 유저 제거
         const pos = playInfo.queue.indexOf(username);
@@ -187,7 +187,7 @@ module.exports.init = (io) => {
             const { sort, hostname } = data;
 
             // playInfo 가져옴
-            const playInfo = getOrDefaultPlayInfo(hostname);
+            const playInfo = getPlayInfo(hostname);
 
             // info 요청시
             if (sort === 'info') {
