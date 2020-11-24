@@ -207,7 +207,7 @@ module.exports.init = (io) => {
                         videoId: playInfo.videoId,
                         videoDuration: playInfo.videoDuration,
                     });
-                } else if (sort === 'timeleft') { // timeleft 요청시
+                } else if (sort === 'playback') { // playback 요청시
                     // 남은시간
                     const timeleft = getTimeLeft(playInfo.timerObj);
                     // 총 재생시간
