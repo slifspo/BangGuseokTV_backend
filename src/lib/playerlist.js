@@ -157,7 +157,7 @@ const startPlayerlist = async (io, hostname) => {
                 )
 
                 // playInfo를 emit
-                io.to(hostname).emit('sendPlayState', {
+                io.to(hostname).emit('sendPlayInfo', {
                     sort: 'info',
                     username: firstUsername,
                     videoId: firstVideo.videoId,
