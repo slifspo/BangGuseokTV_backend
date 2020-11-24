@@ -158,9 +158,10 @@ const startPlayerlist = async (io, hostname) => {
 
                 // playInfo를 emit
                 io.to(hostname).emit('sendPlayState', {
+                    sort: 'info',
                     username: firstUsername,
                     videoId: firstVideo.videoId,
-                    videoDuration: playInfo.videoDuration
+                    videoDuration: playInfo.videoDuration,
                 });
             } else {
                 playInfo.videoDuration = failDelay;
@@ -173,7 +174,7 @@ const startPlayerlist = async (io, hostname) => {
     }
 
     // 타이머 재귀 실행
-    const timerObj = setTimeout(startPlayerlist, videoDuration * 1000, io, hostname);
+    const timerObj = setTimeout(startPlayerlist, playInfo.videoDuration * 1000, io, hostname);
     // 타이머 객체 저장
     playInfo.timerObj = timerObj;
 };
