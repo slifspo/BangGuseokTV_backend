@@ -62,6 +62,9 @@ const removeUserFromPlayerlist = (io, username) => {
             }
         }
     }
+
+    // 유저 제거
+    joinedPlayerlist.delete(username);
 }
 
 // Exports
@@ -232,6 +235,5 @@ module.exports.init = (io) => {
         // 유저 제거
         loginUsername.delete(disconnUsername);
         loginSocketId.delete(ctx.socket.id);
-        joinedPlayerlist.delete(disconnUsername);
     })
 }
