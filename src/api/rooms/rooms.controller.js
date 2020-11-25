@@ -1,9 +1,6 @@
-const Joi = require('joi');
 const path = require('path');
 const Rooms = require('models/room');
-const Accounts = require('models/account');
 const fs = require('fs');
-const { playState, getTimeLeft, startPlayerlist } = require('lib/playerlist');
 
 // 방 목록 조회
 exports.getRooms = async (ctx) => {

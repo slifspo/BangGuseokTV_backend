@@ -1,4 +1,3 @@
-const Rooms = require('models/room');
 const Accounts = require('models/account');
 const zenio = require('zenio');
 
