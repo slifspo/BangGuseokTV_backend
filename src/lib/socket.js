@@ -1,4 +1,3 @@
-const Rooms = require('models/room');
 const Accounts = require('models/account');
 const { startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo, getPlayInfo, getTimeLeft } = require('lib/playerlist');
 
@@ -50,6 +49,7 @@ const removeUserFromPlayerlist = (io, username) => {
             // 방에 있는 유저들의 playInfo 초기화
             io.to(hostname).emit('sendPlayInfo', {
                 sort: 'info',
+                queue: [],
                 username: '',
                 videoId: '',
                 videoDuration: null,
@@ -60,6 +60,15 @@ const removeUserFromPlayerlist = (io, username) => {
                 // 대기열 다시 시작
                 clearTimeout(playInfo.timerObj);
                 startPlayerlist(io, hostname);
+            } else {
+                // 모든 유저에게 playInfo 보냄
+                io.to(hostname).emit('sendPlayInfo', {
+                    sort: 'info',
+                    queue: playInfo.queue,
+                    username: playInfo.username,
+                    videoId: playInfo.videoId,
+                    videoDuration: playInfo.videoDuration,
+                });
             }
         }
     }
@@ -176,6 +185,15 @@ module.exports.init = (io) => {
             if (playInfo.timerObj === null) {
                 // 대기열 시작
                 startPlayerlist(io, hostname);
+            } else { // 대기열이 돌아가는중이라면
+                // 모든 유저에게 playInfo 보냄
+                io.to(hostname).emit('sendPlayInfo', {
+                    sort: 'info',
+                    queue: playInfo.queue,
+                    username: playInfo.username,
+                    videoId: playInfo.videoId,
+                    videoDuration: playInfo.videoDuration,
+                });
             }
         })
 
@@ -200,6 +218,7 @@ module.exports.init = (io) => {
                     // 해당 유저에게 playInfo 보냄
                     io.to(socket.id).emit('sendPlayInfo', {
                         sort: sort,
+                        queue: playInfo.queue,
                         username: playInfo.username,
                         videoId: playInfo.videoId,
                         videoDuration: playInfo.videoDuration,
@@ -216,6 +235,8 @@ module.exports.init = (io) => {
                 }
             }
         })
+
+        // 
     })
 
     // 소켓 연결해제

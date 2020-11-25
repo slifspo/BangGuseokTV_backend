@@ -1,4 +1,3 @@
-const Rooms = require('models/room');
 const Accounts = require('models/account');
 const zenio = require('zenio');
 
@@ -95,6 +94,7 @@ const startPlayerlist = async (io, hostname) => {
         // 방에 있는 유저들의 playInfo 초기화
         io.to(hostname).emit('sendPlayInfo', {
             sort: 'info',
+            queue: [],
             username: '',
             videoId: '',
             videoDuration: null
@@ -160,6 +160,7 @@ const startPlayerlist = async (io, hostname) => {
                 // 방에 있는 유저들에게 playInfo를 emit
                 io.to(hostname).emit('sendPlayInfo', {
                     sort: 'info',
+                    queue: playInfo.queue,
                     username: firstUsername,
                     videoId: firstVideo.videoId,
                     videoDuration: playInfo.videoDuration,
