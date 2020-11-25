@@ -49,6 +49,7 @@ const removeUserFromPlayerlist = (io, username) => {
             // 방에 있는 유저들의 playInfo 초기화
             io.to(hostname).emit('sendPlayInfo', {
                 sort: 'info',
+                queue: [],
                 username: '',
                 videoId: '',
                 videoDuration: null,
