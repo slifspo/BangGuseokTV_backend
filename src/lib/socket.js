@@ -46,8 +46,6 @@ const removeUserFromPlayerlist = (io, username) => {
             // playInfo 삭제
             deletePlayinfo(hostname);
 
-            console.log('대기열이 비어서 방의 유저들 playinfo 초기화')
-
             // 방에 있는 유저들의 playInfo 초기화
             io.to(hostname).emit('sendPlayInfo', {
                 sort: 'info',
@@ -59,13 +57,11 @@ const removeUserFromPlayerlist = (io, username) => {
         } else { // 대기열에 유저가 남아있으면
             // 접속종료한 유저 === 재생중이던 유저일 경우
             if (playInfo.username === username) {
-                console.log('접속종료한 유저가 재생중이었기때문에 대기열 재시작')
                 // 대기열 다시 시작
                 clearTimeout(playInfo.timerObj);
                 startPlayerlist(io, hostname);
             } else {
                 // 모든 유저에게 playInfo 보냄
-                console.log('접속종료한 유저가 재생중이 아니었으므로 업뎃된 playinfo 다시보냄')
                 io.to(hostname).emit('sendPlayInfo', {
                     sort: 'info',
                     queue: playInfo.queue,
@@ -177,7 +173,6 @@ module.exports.init = (io) => {
         // 유저가 대기열에 참가했을때
         socket.on('joinPlayerlist', async (data) => {
             const { username, hostname } = data;
-            console.log('user: ' + username + ' 이 ' + hostname + ' 에 입장함');
 
             // joinedPlayerlist 에 추가
             joinedPlayerlist.set(username, hostname);
@@ -186,16 +181,12 @@ module.exports.init = (io) => {
             const playInfo = getOrDefaultPlayInfo(hostname);
             playInfo.queue.push(username);
 
-            console.log(playInfo.timerObj);
-
             // 대기열이 돌아가고 있지 않았다면
             if (playInfo.timerObj === null) {
                 // 대기열 시작
-                console.log('대기열이돌아가고있지않아서 새로시작')
                 startPlayerlist(io, hostname);
             } else { // 대기열이 돌아가는중이라면
                 // 모든 유저에게 playInfo 보냄
-                console.log('대기열이 돌아가는중이라 playinfo 모든 유저에게 보냄')
                 io.to(hostname).emit('sendPlayInfo', {
                     sort: 'info',
                     queue: playInfo.queue,
@@ -209,8 +200,6 @@ module.exports.init = (io) => {
         // 유저가 대기열을 나갔을때
         socket.on('leavePlayerlist', async (data) => {
             const { username } = data;
-
-            console.log('유저' + username + ' 이 대기열 나감')
 
             removeUserFromPlayerlist(io, username);
         })
