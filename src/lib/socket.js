@@ -1,4 +1,3 @@
-const Rooms = require('models/room');
 const Accounts = require('models/account');
 const { startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo, getPlayInfo, getTimeLeft } = require('lib/playerlist');
 
@@ -200,6 +199,7 @@ module.exports.init = (io) => {
                     // 해당 유저에게 playInfo 보냄
                     io.to(socket.id).emit('sendPlayInfo', {
                         sort: sort,
+                        queue: playInfo.queue,
                         username: playInfo.username,
                         videoId: playInfo.videoId,
                         videoDuration: playInfo.videoDuration,
@@ -216,6 +216,8 @@ module.exports.init = (io) => {
                 }
             }
         })
+
+        // 
     })
 
     // 소켓 연결해제
