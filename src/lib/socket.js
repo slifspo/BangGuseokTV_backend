@@ -60,6 +60,15 @@ const removeUserFromPlayerlist = (io, username) => {
                 // 대기열 다시 시작
                 clearTimeout(playInfo.timerObj);
                 startPlayerlist(io, hostname);
+            } else {
+                // 모든 유저에게 playInfo 보냄
+                io.to(hostname).emit('sendPlayInfo', {
+                    sort: 'info',
+                    queue: playInfo.queue,
+                    username: playInfo.username,
+                    videoId: playInfo.videoId,
+                    videoDuration: playInfo.videoDuration,
+                });
             }
         }
     }
@@ -176,6 +185,15 @@ module.exports.init = (io) => {
             if (playInfo.timerObj === null) {
                 // 대기열 시작
                 startPlayerlist(io, hostname);
+            } else { // 대기열이 돌아가는중이라면
+                // 모든 유저에게 playInfo 보냄
+                io.to(hostname).emit('sendPlayInfo', {
+                    sort: 'info',
+                    queue: playInfo.queue,
+                    username: playInfo.username,
+                    videoId: playInfo.videoId,
+                    videoDuration: playInfo.videoDuration,
+                });
             }
         })
 
