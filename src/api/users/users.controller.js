@@ -373,7 +373,7 @@ exports.addFriendlist = async (ctx) => {
     const { friendname } = ctx.request.body;
 
     // 권한 검증
-    if (!user || user.profile.username != username) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -432,7 +432,7 @@ exports.deleteFriend = async (ctx) => {
     const { username, friendname } = ctx.params;
 
     // 권한 검증
-    if (!user || user.profile.username != username) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -530,7 +530,7 @@ exports.deleteSentFriendRequest = async (ctx) => {
     const { username, friendname } = ctx.params;
 
     // 권한 검증
-    if (!user || user.profile.username != username) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
@@ -580,7 +580,7 @@ exports.addReceivedFriendRequests = async (ctx) => {
     const { friendname } = ctx.request.body; // 친구추가 요청 보내는유저
 
     // 권한 검증
-    if (!user || user.profile.username != username) {
+    if (!user) {
         ctx.status = 403; // Forbidden
         return;
     }
