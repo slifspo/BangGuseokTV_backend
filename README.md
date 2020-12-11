@@ -10,8 +10,8 @@
 + Koa
 + MongoDB
 + Mongoose
-+ jsonwebtoken
-+ passport
++ Jsonwebtoken
++ Passport
 + Socket.io
 
 ## Web Site
