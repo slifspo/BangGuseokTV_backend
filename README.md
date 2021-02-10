@@ -3,7 +3,7 @@
 클라이언트와의 통신을 통한 인증, 자원관리, 대기열 알고리즘 등을 구현하였습니다.
 
 ## 시스템 구성도
-![시스템구조3 (2)](https://user-images.githubusercontent.com/37526782/107567574-31ce6180-6c29-11eb-8e39-55cad45f131c.png)
+![시스템구조3-3](https://user-images.githubusercontent.com/37526782/107567727-65a98700-6c29-11eb-981c-08d909078315.png)
 
 ## 사용한 기술
 + Node.js
