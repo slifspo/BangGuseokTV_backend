@@ -1,6 +1,7 @@
 const Joi = require('joi');
 const Accounts = require('models/account');
 const Rooms = require('models/room');
+const { setTokenToCookie } = require('lib/token');
 
 // 유저이름 설정
 exports.updateUsername = async (ctx) => {
@@ -67,13 +68,11 @@ exports.updateUsername = async (ctx) => {
     // 바뀐 profile의 토큰을 다시 생성
     const token = await updatedAccount.generateToken();
 
-    ctx.cookies.set('access_token', token, {
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-        sameSite: 'none',
-        secure: true
-    });
-    ctx.body = updatedAccount.profile.username; // 유저이름으로 응답.
+    // 토큰을 쿠키에 저장
+    setTokenToCookie(ctx, token);
+
+    // 유저이름으로 응답.
+    ctx.body = updatedAccount.profile.username;
 }
 
 // 아바타 업데이트
@@ -98,12 +97,9 @@ exports.updateAvatar = async (ctx) => {
     const updatedAccount = await Accounts.findById(user._id);; // 업데이트된 document 가져옴
     const token = await updatedAccount.generateToken();
 
-    ctx.cookies.set('access_token', token, {
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-        sameSite: 'none',
-        secure: true
-    });
+    // 토큰을 쿠키에 저장
+    setTokenToCookie(ctx, token);
+
     ctx.body = updatedAccount.profile.avatar;
 }
 
