@@ -2,6 +2,7 @@ const Joi = require('joi');
 const Accounts = require('models/account');
 const Rooms = require('models/room');
 const { passport } = require('lib/passport');
+const { setTokenToCookie } = require('lib/token');
 
 // 로컬 회원가입
 exports.localRegister = async (ctx) => {
@@ -59,13 +60,11 @@ exports.localRegister = async (ctx) => {
     // 토큰 생성
     const token = await account.generateToken();
 
-    ctx.cookies.set('access_token', token, {
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-        sameSite: 'none',
-        secure: true
-    });
-    ctx.body = account.profile; // 프로필 정보로 응답합니다.
+    // 토큰을 쿠키에 저장
+    setTokenToCookie(ctx, token);
+
+    // 프로필 정보로 응답합니다.
+    ctx.body = account.profile;
 };
 
 // 로컬 로그인
@@ -97,12 +96,10 @@ exports.localLogin = async (ctx) => {
     // 토큰 생성
     const token = await account.generateToken();
 
-    ctx.cookies.set('access_token', token, {
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-        sameSite: 'none',
-        secure: true
-    });
+    // 토큰을 쿠키에 저장
+    setTokenToCookie(ctx, token);
+
+    // 프로필 정보로 응답
     ctx.body = account.profile;
 };
 
@@ -120,12 +117,9 @@ exports.exists = async (ctx) => {
 
 // 로그아웃
 exports.logout = (ctx) => {
-    ctx.cookies.set('access_token', null, {
-        maxAge: 0,
-        httpOnly: true,
-        sameSite: 'none',
-        secure: true
-    });
+    // 토큰에 null값 저장
+    setTokenToCookie(ctx, null);
+
     ctx.status = 200;
 };
 
@@ -176,12 +170,9 @@ exports.emailVerify = async (ctx) => {
     // 바뀐 profile의 토큰을 다시 생성
     const token = await updatedAccount.generateToken();
 
-    ctx.cookies.set('access_token', token, {
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-        sameSite: 'none',
-        secure: true
-    });
+    // 토큰을 쿠키에 저장
+    setTokenToCookie(ctx, token);
+
     ctx.status = 200;
 }
 
@@ -235,13 +226,10 @@ exports.fbLoginCb = (ctx) => {
         // 토큰 생성
         const token = await account.generateToken();
 
-        ctx.cookies.set('access_token', token, {
-            httpOnly: true,
-            maxAge: 1000 * 60 * 60 * 24 * 7,
-            sameSite: 'none',
-            secure: true
-        });
+        // 토큰을 쿠키에 저장
+        setTokenToCookie(ctx, token);
 
+        // 페이지 리다이렉트
         ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
 }
@@ -277,13 +265,10 @@ exports.ggLoginCb = (ctx) => {
         // 토큰 생성
         const token = await account.generateToken();
 
-        ctx.cookies.set('access_token', token, {
-            httpOnly: true,
-            maxAge: 1000 * 60 * 60 * 24 * 7,
-            sameSite: 'none',
-            secure: true
-        });
+        // 토큰을 쿠키에 저장
+        setTokenToCookie(ctx, token);
 
+        // 페이지 리다이렉트
         ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
 }
