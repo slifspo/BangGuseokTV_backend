@@ -1,5 +1,7 @@
 # 설명
 방구석 TV 프로젝트의 백엔드 서버를 개발 및 배포하기 위한 Repository입니다.
+HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
+JWT와 대기열을 관리하는 모듈들을 구현한 서버입니다.
 
 # Web Site
 ### Preview
@@ -15,8 +17,9 @@ https://bangguseoktv.web.app/
 ![시스템구조3-3](https://user-images.githubusercontent.com/37526782/107567727-65a98700-6c29-11eb-981c-08d909078315.png)
 
 # 개발환경
-+ OS : Windows 10
-+ Editor : VSCode
++ 운영체제 : Windows 10
++ 개발도구 : VSCode
++ 언어 : Javascript (ES6+)
 
 # 사용 기술
 + Node.js (Koa 프레임워크)
