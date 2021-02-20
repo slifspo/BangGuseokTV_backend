@@ -1,20 +1,8 @@
 # 설명
 방구석 TV 프로젝트의 백엔드 서버를 개발 및 배포하기 위한 Repository입니다.
-HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
-JWT와 대기열을 관리하는 모듈들을 구현한 서버입니다.
 
-# Web Site
-### Preview
-![스크린샷](https://user-images.githubusercontent.com/37526782/101886780-4ec1c680-3bdf-11eb-9b47-23bf29b83ec3.JPG)
-
-### 브라우저 지원
-![브라우저 호환](https://user-images.githubusercontent.com/37526782/107678316-94356980-6cde-11eb-9cbb-d9102d698434.PNG)
-
-### 웹사이트 주소
-https://bangguseoktv.web.app/
-
-# 시스템 구성도
-![시스템구조3-3](https://user-images.githubusercontent.com/37526782/107567727-65a98700-6c29-11eb-981c-08d909078315.png)
+HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며  
+JWT와 대기열을 관리하는 모듈들을 구현한 서버입니다.  
 
 # 개발환경
 + 운영체제 : Windows 10
@@ -24,6 +12,9 @@ https://bangguseoktv.web.app/
 # 사용 기술
 + Node.js (Koa 프레임워크)
 + MongoDB (mongoose)
+
+# 시스템 구성도
+![시스템구조3-3](https://user-images.githubusercontent.com/37526782/107567727-65a98700-6c29-11eb-981c-08d909078315.png)
 
 # 폴더 설명
 + /api : auth, rooms, users의 API
@@ -51,3 +42,16 @@ https://bangguseoktv.web.app/
 
 ### SNS 로그인
 + Passport를 사용하여 OAuth 2.0 인증을 통한 간편한 SNS 로그인을 구현
+
+
+
+# Web Site
+### Preview
+![스크린샷](https://user-images.githubusercontent.com/37526782/101886780-4ec1c680-3bdf-11eb-9b47-23bf29b83ec3.JPG)
+
+### 브라우저 지원
+![브라우저 호환](https://user-images.githubusercontent.com/37526782/107678316-94356980-6cde-11eb-9cbb-d9102d698434.PNG)
+
+### 웹사이트 주소
+https://bangguseoktv.web.app/
+
