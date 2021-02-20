@@ -10,9 +10,9 @@ HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
 
 
 # <br>사용 기술
-## JavaScript (ES6)
+## JavaScript (ES6+)
 + 프론트엔드와 백엔드를 한가지 언어로 작업할 수 있고 MongoDB와의 궁합이 좋기 때문에 사용했습니다.
-+ Arrow, let, const, map 등의 ES6 문법을 사용했습니다.
++ Arrow, let, const, map, async/await 등의 문법을 사용했습니다.
 
 ## Node.js, Koa
 + Javascript를 사용할 수 있고 웹 프레임워크인 Koa를 통해 웹서버로서 동작이 가능하기 때문에 Node.js를 사용했습니다.  
