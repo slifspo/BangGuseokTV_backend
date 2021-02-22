@@ -9,7 +9,7 @@ const loginSocketId = new Map(); // key: socket.id, value: username
 const joinedPlayerlist = new Map(); // key: username, value: hostname
 
 // 친구목록에 있는 유저에게 connected/disconnected 알리기
-const userConnected = async (connUsername, io, isConnected) => {
+const userConnected = async function (connUsername, io, isConnected) {
     // 연결해제한 유저의 친구목록 불러옴
     const account = await Accounts.findOne({ 'profile.username': connUsername }).populate('friendlist', 'profile');
 
@@ -26,7 +26,7 @@ const userConnected = async (connUsername, io, isConnected) => {
 }
 
 // 유저를 대기열에서 제거
-const removeUserFromPlayerlist = (io, username) => {
+const removeUserFromPlayerlist = function (io, username) {
     // 유저가 대기열에 참가한 방의 hostname
     const hostname = joinedPlayerlist.get(username);
 
@@ -77,12 +77,8 @@ const removeUserFromPlayerlist = (io, username) => {
     joinedPlayerlist.delete(username);
 }
 
-// Exports
-module.exports.loginUsername = loginUsername;
-module.exports.loginSocketId = loginSocketId;
-
 // 소켓 이벤트 선언
-module.exports.init = (io) => {
+const init = function (io) {
     // 소켓 연결
     io.on('connection', (socket) => {
 
@@ -90,7 +86,7 @@ module.exports.init = (io) => {
         socket.on('init', (data) => {
             const { username } = data;
 
-            // 유저정보 업데이트
+            // 로그인중인 유저목록 업데이트
             loginUsername.set(username, socket.id);
             loginSocketId.set(socket.id, username);
 
@@ -102,7 +98,10 @@ module.exports.init = (io) => {
         socket.on('joinRoom', (data) => {
             const { hostname, username } = data;
 
+            // 호스트이름의 방에 참가
             socket.join(hostname);
+
+            // 채팅창에 입장메세지 띄우기
             io.to(hostname).emit('receiveChat', {
                 type: 'alert',
                 info: {
@@ -115,7 +114,10 @@ module.exports.init = (io) => {
         socket.on('leaveRoom', (data) => {
             const { hostname, username } = data;
 
+            // 방에서 퇴장
             socket.leave(hostname);
+
+            // 채팅창에 퇴장메세지 띄우기
             io.to(hostname).emit('receiveChat', {
                 type: 'alert',
                 info: {
@@ -128,6 +130,7 @@ module.exports.init = (io) => {
         socket.on('sendChat', (data) => {
             const { hostname, username, avatar, message } = data;
 
+            // 채팅창에 메세지 띄우기
             io.to(hostname).emit('receiveChat', {
                 type: 'chat',
                 info: {
@@ -138,7 +141,7 @@ module.exports.init = (io) => {
             })
         })
 
-        // 친구관련 통신시 Receiver에게 Sender의 profile 정보를 보냄
+        // 친구요청 관련 통신시 Receiver에게 Sender의 profile 정보를 보냄
         socket.on('sendProfile', async (data) => {
             // username: Sender, friendname: Receiver
             const { username, friendname, sort } = data;
@@ -170,7 +173,7 @@ module.exports.init = (io) => {
             }
         })
 
-        // 유저가 대기열에 참가했을때
+        // 유저가 대기열에 참가했을때 대기열을 업데이트하거나 대기열이 생성되었다면 대기열을 시작함
         socket.on('joinPlayerlist', async (data) => {
             const { username, hostname } = data;
 
@@ -197,14 +200,14 @@ module.exports.init = (io) => {
             }
         })
 
-        // 유저가 대기열을 나갔을때
+        // 유저가 대기열을 나갔을때 대기열에서 유저 제거
         socket.on('leavePlayerlist', async (data) => {
             const { username } = data;
 
             removeUserFromPlayerlist(io, username);
         })
 
-        // 유저가 playInfo 요청할때
+        // 유저가 playInfo 요청할때 현재 재생중인 정보 및 대기열을 응답해줌
         socket.on('reqPlayInfo', async (data) => {
             const { sort, hostname } = data;
 
@@ -235,8 +238,6 @@ module.exports.init = (io) => {
                 }
             }
         })
-
-        // 
     })
 
     // 소켓 연결해제
@@ -259,3 +260,8 @@ module.exports.init = (io) => {
         loginSocketId.delete(ctx.socket.id);
     })
 }
+
+// Exports
+exports.loginUsername = loginUsername;
+exports.loginSocketId = loginSocketId;
+exports.init = init;
