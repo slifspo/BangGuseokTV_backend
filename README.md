@@ -4,13 +4,8 @@
 HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며  
 토큰인증시스템 및 대기열을 관리하는 모듈들을 구현한 서버입니다.  
 
-
 # <br>시스템 구성도
 ![시스템구조3-3](https://user-images.githubusercontent.com/37526782/107567727-65a98700-6c29-11eb-981c-08d909078315.png)
-
-클라이언트 사이드 렌더링(CSR) 방식을 이용해 SPA 구조로 개발을 했습니다.  
-방구석TV 프로젝트의 기본적인 작동구조는 프론트엔드는 React를 사용해 구성하고 
-백엔드는 Node.js 및 Koa 웹프레임워크로 구성하여 HTTP통신 및 소켓 통신을 통해 JSON형식의 데이터를 주고받는 방식입니다.
 
 # <br>사용 기술
 ## JavaScript (ES6+)
@@ -25,6 +20,15 @@ HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
 + Node.js와의 궁합이 좋고 JSON 형태의 데이터를 사용하기 위해 MongoDB를 사용했습니다.
 + MongoDB의 널리 알려진 ODM인 Mongoose를 사용했습니다.
 
+# <br>Web Site
+## Preview
+![스크린샷](https://user-images.githubusercontent.com/37526782/101886780-4ec1c680-3bdf-11eb-9b47-23bf29b83ec3.JPG)
+
+## 브라우저 지원
+![브라우저 호환](https://user-images.githubusercontent.com/37526782/107678316-94356980-6cde-11eb-9cbb-d9102d698434.PNG)
+
+## 웹사이트 주소
+https://bangguseoktv.web.app/
 
 # <br>폴더 설명
 + /api : auth, rooms, users의 API
@@ -55,13 +59,4 @@ HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
 + Passport를 사용하여 OAuth 2.0 인증을 통한 간편한 SNS 로그인을 구현
 
 
-# <br>Web Site
-## Preview
-![스크린샷](https://user-images.githubusercontent.com/37526782/101886780-4ec1c680-3bdf-11eb-9b47-23bf29b83ec3.JPG)
-
-## 브라우저 지원
-![브라우저 호환](https://user-images.githubusercontent.com/37526782/107678316-94356980-6cde-11eb-9cbb-d9102d698434.PNG)
-
-## 웹사이트 주소
-https://bangguseoktv.web.app/
 
