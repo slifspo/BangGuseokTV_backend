@@ -4,6 +4,12 @@
 HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며  
 토큰인증시스템 및 대기열을 관리하는 모듈들을 구현한 서버입니다.  
 
+# <br>개발 환경
++ 운영체제 : windows 10
++ IDE : Visual Studio Code 1.53.2
++ 개발언어 : JavaScript (ES6+)
++ 호스팅 : Heroku
+
 # <br>사용 기술
 ## JavaScript (ES6+)
 + 프론트엔드와 백엔드를 한가지 언어로 작업하기 위해 사용했습니다.
@@ -14,11 +20,14 @@ HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
 + Express보다 경량화되고 try-catch 에러처리 없이 async/await를 사용할 수 있는 Koa를 사용했습니다.
 
 ## MongoDB, Mongoose
-+ Node.js와의 궁합이 좋고 JSON 형태의 데이터를 사용하기 위해 MongoDB를 사용했습니다.
++ Node.js와의 궁합이 좋고 JSON 형태의 데이터를 사용하기 위해 MongoDB를 사용했고 클라우드 서비스인 Atlas 사용했습니다.
 + MongoDB의 널리 알려진 ODM인 Mongoose를 사용했습니다.
 
 # <br>시스템 구성도
-![시스템구조3-3](https://user-images.githubusercontent.com/37526782/107567727-65a98700-6c29-11eb-981c-08d909078315.png)
+![시스템구조4](https://user-images.githubusercontent.com/37526782/109167228-e12a3d00-77c0-11eb-87a9-810a2cb78690.png)  
+서버사이드렌더링(SSR)이 아닌 클라이언트사이드렌더링(CSR) 방식의 SPA를 구성했습니다.  
+클라이언트와 서버의 통신을 위해 HTTP통신과 Socket통신을 사용하였으며 모든 데이터는 JSON 형태로 전달이 되도록 구성했습니다.
+
 
 # <br>Web Site
 ## Preview
