@@ -4,13 +4,13 @@
 HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며  
 토큰인증시스템 및 대기열을 관리하는 모듈들을 구현한 서버입니다.  
 
-# <br>개발 환경
+# <br>개발환경
 + 운영체제 : windows 10
 + IDE : Visual Studio Code 1.53.2
 + 개발언어 : JavaScript (ES6+)
 + 호스팅 : Heroku
 
-# <br>사용 기술
+# <br>사용기술
 ## JavaScript (ES6+)
 + 프론트엔드와 백엔드를 한가지 언어로 작업하기 위해 사용했습니다.
 + Arrow, let, const, map, async/await 등의 문법을 사용했습니다.
@@ -30,8 +30,8 @@ HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
 
 
 # <br>Web Site
-## Preview
-![스크린샷](https://user-images.githubusercontent.com/37526782/101886780-4ec1c680-3bdf-11eb-9b47-23bf29b83ec3.JPG)
+## 구현기능
+![사이트기능](https://user-images.githubusercontent.com/37526782/109170871-872b7680-77c4-11eb-8285-8bb896cb796f.PNG)
 
 ## 브라우저 지원
 ![브라우저 호환](https://user-images.githubusercontent.com/37526782/107678316-94356980-6cde-11eb-9cbb-d9102d698434.PNG)
