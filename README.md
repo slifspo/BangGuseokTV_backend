@@ -4,9 +4,6 @@
 HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며  
 토큰인증시스템 및 대기열을 관리하는 모듈들을 구현한 서버입니다.  
 
-# <br>시스템 구성도
-![시스템구조3-3](https://user-images.githubusercontent.com/37526782/107567727-65a98700-6c29-11eb-981c-08d909078315.png)
-
 # <br>사용 기술
 ## JavaScript (ES6+)
 + 프론트엔드와 백엔드를 한가지 언어로 작업하기 위해 사용했습니다.
@@ -19,6 +16,9 @@ HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
 ## MongoDB, Mongoose
 + Node.js와의 궁합이 좋고 JSON 형태의 데이터를 사용하기 위해 MongoDB를 사용했습니다.
 + MongoDB의 널리 알려진 ODM인 Mongoose를 사용했습니다.
+
+# <br>시스템 구성도
+![시스템구조3-3](https://user-images.githubusercontent.com/37526782/107567727-65a98700-6c29-11eb-981c-08d909078315.png)
 
 # <br>Web Site
 ## Preview
@@ -88,7 +88,8 @@ jsonwebtoken 모듈을 사용하여 토큰을 생성하고 검증하는 함수�
 토큰의 유효시간은 짧게 1시간으로 설정하였으며 토큰을 쿠키에 저장할 때 httpOnly와 SameSite 설정을 통해 쿠키가 안전하게 전달되도록 하였습니다.  
 
 ## models/
-Mongoose 를 사용하여 스키마와 메소드를 정의하고 이를 모델로 변환합니다.
+Mongoose 를 사용하여 스키마와 메소드를 정의하고 이를 모델로 변환합니다.  
+또한 static 메소드와 instance 메소드를 통해 자주 사용하는 메소드들을 정의했습니다.
 ### account.js
 유저의 계정에 대한 데이터베이스 스키마와 메소드를 정의했습니다.
 ### room.js
