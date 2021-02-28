@@ -6,7 +6,7 @@ HTTP통신 및 소켓통신을 통해 클라이언트와 상호작용하며
 
 # <br>개발환경
 + 운영체제 : windows 10
-+ IDE : Visual Studio Code 1.53.2
++ Editor : Visual Studio Code 1.53.2
 + 개발언어 : JavaScript (ES6+)
 + 호스팅 : Heroku
 
