@@ -13,9 +13,10 @@ const serve = require('koa-static');
 
 const mongoose = require('mongoose');
 const path = require('path');
+const passport = require('koa-passport');
 
 const { jwtMiddleware } = require('lib/token');
-const { passport } = require('lib/passport');
+const passportConfig = require('lib/passport');
 
 // 인스턴스 생성
 const app = new Koa();
@@ -71,8 +72,8 @@ app.use(jwtMiddleware);
 
 // passport 구동
 app.use(passport.initialize());
-app.use(passport.session());
-require('lib/passport').init();
+// passport 설정 
+passportConfig();
 
 // socket.io 를 연결
 io.attach(app);
