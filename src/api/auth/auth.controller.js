@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const Accounts = require('models/account');
 const Rooms = require('models/room');
-const { passport } = require('lib/passport');
+const passport = require('koa-passport');
 const { setTokenToCookie } = require('lib/token');
 
 // 로컬 회원가입
