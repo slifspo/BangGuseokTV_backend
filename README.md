@@ -60,8 +60,7 @@ https://bangguseoktv.web.app/
     |   ├── passport.js
     |   ├── playerlist.js
     |   ├── socket.js
-    |   ├── token.js
-    |   └── upload.js
+    |   └── token.js
     ├── models/
     |   ├── account.js
     |   └── room.js
