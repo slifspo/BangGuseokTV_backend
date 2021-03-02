@@ -197,7 +197,7 @@ exports.emaliSend = async (ctx) => {
 
 // 페이스북 로그인 콜백
 exports.fbLoginCb = (ctx) => {
-    passport.authenticate('facebook', async (err, profile, info) => {
+    return passport.authenticate('facebook', async (err, profile, info) => {
         // 계정 조회
         let account = await Accounts.findByEmail(profile.emails[0].value);
 
@@ -222,13 +222,13 @@ exports.fbLoginCb = (ctx) => {
         setTokenToCookie(ctx, token);
 
         // 페이지 리다이렉트
-        return ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
+        ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
 }
 
 // 구글 로그인 콜백
 exports.ggLoginCb = (ctx) => {
-    passport.authenticate('google', async (err, profile, info) => {
+    return passport.authenticate('google', async (err, profile, info) => {
         // 계정 조회
         let account = await Accounts.findByEmail(profile.emails[0].value);
 
@@ -253,6 +253,6 @@ exports.ggLoginCb = (ctx) => {
         setTokenToCookie(ctx, token);
 
         // 페이지 리다이렉트
-        return ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
+        ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
 }
