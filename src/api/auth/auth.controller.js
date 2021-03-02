@@ -195,17 +195,9 @@ exports.emaliSend = async (ctx) => {
     ctx.status = 200;
 }
 
-// 페이스북 로그인
-exports.fbLogin = (ctx) => {
-    passport.authenticate('facebook', { // 페이스북 로그인 진행
-        authType: 'rerequest',
-        scope: ['email']
-    })(ctx);
-}
-
 // 페이스북 로그인 콜백
 exports.fbLoginCb = (ctx) => {
-    return passport.authenticate('facebook', async (err, profile, info) => {
+    passport.authenticate('facebook', async (err, profile, info) => {
         // 계정 조회
         let account = await Accounts.findByEmail(profile.emails[0].value);
 
@@ -234,17 +226,9 @@ exports.fbLoginCb = (ctx) => {
     })(ctx);
 }
 
-// 구글 로그인
-exports.ggLogin = (ctx) => {
-    passport.authenticate('google', { // 구글 로그인 진행
-        authType: 'rerequest',
-        scope: ['email']
-    })(ctx);
-}
-
 // 구글 로그인 콜백
 exports.ggLoginCb = (ctx) => {
-    return passport.authenticate('google', async (err, profile, info) => {
+    passport.authenticate('google', async (err, profile, info) => {
         // 계정 조회
         let account = await Accounts.findByEmail(profile.emails[0].value);
 
