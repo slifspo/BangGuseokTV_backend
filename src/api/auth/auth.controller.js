@@ -222,7 +222,7 @@ exports.fbLoginCb = (ctx) => {
         setTokenToCookie(ctx, token);
 
         // 페이지 리다이렉트
-        ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
+        return ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
 }
 
@@ -253,6 +253,6 @@ exports.ggLoginCb = (ctx) => {
         setTokenToCookie(ctx, token);
 
         // 페이지 리다이렉트
-        ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
+        return ctx.redirect(process.env.CLIENT_HOST + '/auth/social');
     })(ctx);
 }
