@@ -19,7 +19,7 @@ module.exports = () => {
         clientSecret: process.env.GOOGLE_SECRET,
         callbackURL: process.env.SERVER_HOST + '/api/auth/login/google/callback',
         profileFields: ['id', 'email', 'displayName']
-    }, (accessToken, refreshToken, profile, cb) => {
-        return cb(null, profile); // 로그인 성공
+    }, (accessToken, refreshToken, profile, done) => {
+        return done(null, profile); // 로그인 성공
     }));
 }
