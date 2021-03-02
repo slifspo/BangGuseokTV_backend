@@ -197,7 +197,7 @@ exports.emaliSend = async (ctx) => {
 
 // 페이스북 로그인 콜백
 exports.fbLoginCb = (ctx) => {
-    return passport.authenticate('facebook', async (err, profile, info) => {
+    return passport.authenticate('facebook', { session: false }, async (err, profile, info) => {
         // 계정 조회
         let account = await Accounts.findByEmail(profile.emails[0].value);
 
@@ -228,7 +228,7 @@ exports.fbLoginCb = (ctx) => {
 
 // 구글 로그인 콜백
 exports.ggLoginCb = (ctx) => {
-    return passport.authenticate('google', async (err, profile, info) => {
+    return passport.authenticate('google', { session: false }, async (err, profile, info) => {
         // 계정 조회
         let account = await Accounts.findByEmail(profile.emails[0].value);
 
