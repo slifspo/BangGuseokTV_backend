@@ -68,7 +68,6 @@ exports.updateThumbnail = async (ctx) => {
         return;
     }
 
-    //const date = moment().format('YYYYMMDDHHmmss')
     const file = ctx.request.files.file;
     const ext = path.extname(file.path);
 

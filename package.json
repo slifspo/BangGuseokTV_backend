@@ -17,7 +17,6 @@
     "koa-session": "^6.0.0",
     "koa-socket-2": "^1.2.0",
     "koa-static": "^5.0.0",
-    "moment": "^2.25.3",
     "mongoose": "^5.9.7",
     "nodemailer": "^6.4.6",
     "passport-facebook": "^3.0.0",
