@@ -182,4 +182,4 @@ const startPlayerlist = async (io, hostname) => {
 };
 module.exports = {
     getTimeLeft, startPlayerlist, getOrDefaultPlayInfo, deletePlayinfo, getPlayInfo
-}
+};

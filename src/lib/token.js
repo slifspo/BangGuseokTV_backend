@@ -80,6 +80,6 @@ const jwtMiddleware = async (ctx, next) => {
     return next();
 };
 
-exports.generateToken = generateToken;
-exports.setTokenToCookie = setTokenToCookie;
-exports.jwtMiddleware = jwtMiddleware;
+module.exports = {
+    generateToken, setTokenToCookie, jwtMiddleware,
+};

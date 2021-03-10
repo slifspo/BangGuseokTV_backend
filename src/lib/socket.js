@@ -262,6 +262,6 @@ const init = function (io) {
 }
 
 // Exports
-exports.loginUsername = loginUsername;
-exports.loginSocketId = loginSocketId;
-exports.init = init;
+module.exports = {
+    loginUsername, loginSocketId, init,
+};

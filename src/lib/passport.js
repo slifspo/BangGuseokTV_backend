@@ -22,4 +22,4 @@ module.exports = () => {
     }, (accessToken, refreshToken, profile, done) => {
         return done(null, profile); // 로그인 성공
     }));
-}
+};
