@@ -24,7 +24,7 @@ auth.get('/login/facebook/callback', authCtrl.fbLoginCb);
 
 // 구글 로그인
 auth.get('/login/google',
-    passport.authenticate('facebook', {
+    passport.authenticate('google', {
         authType: 'rerequest',
         scope: ['email']
     })
