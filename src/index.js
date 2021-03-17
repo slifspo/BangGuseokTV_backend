@@ -37,9 +37,6 @@ mongoose.connect(process.env.MONGO_URI).then(
     console.error(e);
 });
 
-// PORT 값이 설정되어있지 않다면 4000 을 사용합니다.
-const port = process.env.PORT || 4000;
-
 // CORS 옵션 설정
 let corsOptions = {
     origin: process.env.CLIENT_HOST, // 허락하고자 하는 요청 주소
@@ -85,6 +82,11 @@ router.use('/api', api.routes());
 app.use(router.routes())
 app.use(router.allowedMethods());
 
-app.listen(port, () => {
+// PORT 값이 설정되어있지 않다면 4000 을 사용합니다.
+const port = process.env.PORT || 4000;
+
+const server = app.listen(port, () => {
     console.log('bgs server is listening to port ' + port);
 });
+
+module.exports = server;
